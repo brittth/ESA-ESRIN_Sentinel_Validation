@@ -1,0 +1,1900 @@
+\documentclass[9pt]{beamer}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\graphicspath{{C:/Users/britta themann/Documents/Sentinel_Validation/}}
+\usetheme{Boadilla}
+\usepackage{booktabs} % tables
+\usefonttheme[onlymath]{serif}
+\usetheme[hideallsubsections, width=1.3cm, height = 1cm]{Goettingen}
+\usepackage{fontawesome} % buttons
+
+% buttons
+\setbeamerfont{button}{size=\tiny}
+\def\insertreturnsymbol{%
+  \faChevronLeft\space
+}
+\def\insertskipsymbol{%
+  \space\faChevronRight
+}
+
+\usepackage{etoolbox} % table of contents spacing
+
+% sidebar adjustment
+  \makeatletter
+  \setbeamertemplate{sidebar \beamer@sidebarside}%
+  {
+    \beamer@tempdim=\beamer@sidebarwidth%
+    \advance\beamer@tempdim by -6pt%
+    \insertverticalnavigation{\beamer@sidebarwidth}%
+    \vfill
+    \ifx\beamer@sidebarside\beamer@lefttext%
+    \else%
+      \usebeamercolor{normal text}%
+      \llap{\usebeamertemplate***{navigation symbols}\hskip0.1cm}%
+      \vskip2pt%
+    \fi%
+  }%
+\makeatother
+
+\makeatletter\setbeamertemplate{navigation symbols}{} %remove navigation symbols
+
+\makeatletter % reduce line spacing in table of contents
+\patchcmd{\beamer@sectionintoc}{\vskip1.5em}{\vskip0.5em}{}{}
+\makeatother
+
+% adjust footer
+\makeatother\setbeamertemplate{footline} 
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.2\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle\hspace*{3em}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.198\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshortdate\hspace*{1em}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.102\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{title in head/foot}\insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\title{Validation of Sentinel Surface Reflectance Products}
+\subtitle{Using 2018 FLEX Campaign Imagery as Reference}
+\author{Britta Themann}
+\institute{ESA-ESRIN}
+\date{\today}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\setbeamercolor{block title}{fg = red!55!black, bg=red!25!white} %Sentinel-2 box
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\setbeamertemplate{section in toc}{\inserttocsection}
+\begin{frame}
+\frametitle{Outline}
+\hspace*{.5cm}
+\begin{minipage}{\textwidth}
+\tableofcontents[hideallsubsections]
+\end{minipage}
+\end{frame}
+
+% Ctrl+T to comment, Ctrl+U to uncomment
+%-----------------------------------------------------------------
+\section{Methods}
+
+\subsection{Prerequisites}
+\begin{frame}
+\frametitle{Methods: Prerequisites}
+\begin{alertblock}{Sentinel-3}
+\begin{itemize}
+\begin{scriptsize}
+\item Spatially subset imagery roughly to the area of interest\newline
+SNAP – Raster – Subset – Spatial Subset
+\item Spectral subset to bands containing SR info and the SYN Flag Layer\newline
+SNAP – Raster – Subset – Band subset
+\item Reproject imagery to UTM Zone 32N using Nearest Neighbor\newline
+SNAP – Raster – Reprojection
+\item Save subsetted and reprojected imagery as GeoTIFF\newline
+SNAP – File – Export – GeoTIFF
+\item Convert Spectral Response Functions to csv file using NASA’s free Panoply Software
+\end{scriptsize}
+\end{itemize}
+\tiny http://step.esa.int/main/toolboxes/snap/\newline
+\tiny https://www.giss.nasa.gov/tools/panoply/
+\end{alertblock}
+Create an input csv file listing dataset specific meta data:
+\begin{itemize}
+\begin{scriptsize}
+\item Validation ID $\Rightarrow$ capital letter, underscore, surface
+\item Site
+\item Reference scene, sensor, acq. date, acq. time, scene path \& scene filetype
+\item Sentinel scene, scene (short), product, scene path, scene filetype \& mask path
+\end{scriptsize}		
+\end{itemize}
+\end{frame}
+
+\subsection{Overview}
+\begin{frame}
+\frametitle{Methods: Overview I/II}
+\begin{center}
+\includegraphics[width = 10cm, height = 8cm,keepaspectratio]
+{C:/Users/britta themann/Documents/Sentinel_Validation_Flowcharts/Methods.png}
+\newline\newline
+All methods were conducted using \textbf{R v.4.0.3} and \textbf{RStudio v. 1.3.1093} and saved as \textbf{R-Markdowns (Rmd)} available on \href{https://github.com/brittth/ESA-ESRIN_Sentinel_Validation}{\textbf{this GitHub repository}}.\newline
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Methods: Overview II/II}
+\begin{center}
+\includegraphics[width = 10cm, height = 8cm,keepaspectratio]
+{C:/Users/britta themann/Documents/Sentinel_Validation_Flowcharts/File_and_Folder_Structure.png}
+\end{center}
+\end{frame}
+
+\subsection{Metadata}
+\begin{frame}
+\frametitle{Methods: Metadata Evaluation}
+\begin{itemize}
+\item Compare acquisition time between Sentinel and HyPlant imagery
+\item Compare spatial resolutions between Sentinel and HyPlant imagery
+\item Produce a map locating HyPlant acquisition sites
+\item Compile a metadata file from a manually created input file
+\end{itemize}
+\end{frame}
+
+\subsection{Spectral Resampling}
+\begin{frame}
+\frametitle{Methods: Spectral Resampling of Reference Data}
+R v.4.0.3\newline
+RStudio v.1.3.1093\newline
+R package: hsdar\newline\newline
+HyPlant spectral resolution $\Rightarrow$ Sentinel spectral resolution
+\begin{block}{Sentinel-2}
+626 Bands $\Rightarrow$ 12 Bands (of 13, Band 10 excluded)\newline\newline
+Sentinel-2A/B MSI Spectral Response Function
+\end{block}
+\begin{alertblock}{Sentinel-3}
+626 Bands $\Rightarrow$ 16 Bands (of 21, Band 13/14/15/19/20 excluded)\newline\newline
+Sentinel-3A OLCI Spectral Response Function
+\end{alertblock}
+\end{frame}
+
+\subsection{Spatial Resampling}
+\begin{frame}
+\frametitle{Methods: Spatial Resampling of Reference Data}
+HyPlant spatial resolution $\Rightarrow$ Sentinel spatial resolution
+\begin{block}{Sentinel-2}
+HyPlant 1.5/3/4.5 m $\Rightarrow$ 10/20/60 m
+\end{block}
+\begin{alertblock}{Sentinel-3}
+HyPlant 1.5/3/4.5 m $\Rightarrow$ 300 m
+\end{alertblock}
+\end{frame}
+
+\subsection{Masking}
+\begin{frame}
+\frametitle{Methods: Surface Masking}
+Sentinel and reference imagery are masked for land and water surfaces.
+\begin{block}{Sentinel-2}
+Scene Classification Layer (SCL)
+\begin{itemize}
+\item LAND: non-vegetated \& vegetation
+\item WATER: water
+\end{itemize}
+\end{block}
+\begin{alertblock}{Sentinel-3}
+SYNERGY Flag Layer
+\begin{itemize}
+\item LAND: success + partly cloudy + land \& success + land
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\subsection{Comparison}
+\begin{frame}
+\frametitle{Methods: Comparison of Surface Reflectance}
+Sentinel vs. reference imagery\newline\newline
+Surface Reflectance Distribution $\Rightarrow$ Boxplot:
+\begin{itemize}
+\item Hinges = 25\% and 75\% quantiles
+\item Center Bar = median
+\item Whiskers = distance to extrema excluding outliers
+\item Outliers = values farther than 1.5 times the inter-quartile range away from respective hinge\newline 
+\end{itemize}
+Mean Surface Reflectance and Surface Reflectance Difference $\Rightarrow$ Lineplot
+\end{frame}
+
+\subsection{APU Statistics}
+\begin{frame}
+\frametitle{Methods: APU Statistics \& Errors I/II}
+ APU statistics and errors are calculated and visualized.
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}[t]{lcl}
+\toprule
+Variable & Abbr. & Definition\\
+\midrule
+Specifications & Specs & acceptable limits as stated by the S2 L2-A Data Quality Report\\
+Accuracy Value & A & Mean difference to the reference value\\
+Precision Value & P & Variation around the mean different to the reference value\\
+Uncertainty Value & U & Quadratic sum of accuracy and precision (= RMSE)\\
+Root Mean Squared Error & RMSE & Standard deviation of the residuals (= U)\\
+R-Squared & R2 & Coefficient of Determination\\
+\bottomrule
+\end{tabular}}
+\end{table}%
+\begin{scriptsize}
+Results reported in:
+\begin{itemize}
+\item Plot: Mean APU statistics and error plot
+\item Plot: APU statistics and error plot for individual bands
+\item Plot: RMSE and R2 line plot
+\item Table: Scene Summary
+\item Table: Band Summary 
+\end{itemize}
+\end{scriptsize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Methods: APU Statistics \& Errors II/II}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{math}
+\scriptstyle \vartriangle\rho_{i,\lambda}^{SR}= (\rho_{i,\lambda}^{SR_{Sentinel}} - \rho_{i,\lambda}^{SR_{Reference}})\newline\newline
+\scriptstyle Specs\quad\vartriangle\rho_{i,\lambda}^{SR} < 0.05 (\rho_{i,\lambda}^{SR_{Reference}}) + 0.005\newline\newline
+\scriptstyle A = \dfrac{1}{n_\lambda}(\sum\limits_{i=1}^{n_\lambda}\vartriangle\rho_{i,\lambda}^{SR})\newline\newline
+\scriptstyle P = \sqrt{\frac{1}{n_\lambda-1}\sum\limits_{i=1}^{n_\lambda}(\vartriangle\rho_{i,\lambda}^{SR}-A)^{2}}\newline\newline
+\scriptstyle U = \sqrt{\frac{1}{n_\lambda}\sum\limits_{i=1}^{n_\lambda}(\vartriangle\rho_{i,\lambda}^{SR})^{2}}\newline\newline
+\end{math}
+\end{column}
+\begin{column}{0.5\textwidth}
+\newline\newline\newline\newline
+where\newline
+\begin{math}\scriptstyle\rho_{i,\lambda}^{SR}\end{math} is the surface reflectance of observation \begin{math}\scriptstyle i\end{math} at wavelength \begin{math}\scriptstyle\lambda\end{math} and \newline
+\begin{math}\scriptstyle n_\lambda\end{math} the number of observations at wavelength \begin{math}\scriptstyle\lambda\end{math}\\
+\end{column}
+\end{columns}
+\begin{math}
+\scriptstyle RMSE = \sqrt{\tfrac{\sum(\vartriangle\rho_{i,\lambda}^{SR})^2}{n_i}}\newline\newline
+\scriptstyle R2 =\left(\tfrac{\sum[(\rho_{i,\lambda}^{SR_{Ref}} - \hat{\rho}_{\lambda}^{SR_{Ref}})(\rho_{i,\lambda}^{SR_{Sen}} - \hat{\rho}_{\lambda}^{SR_{Sen}})]}{\sqrt{\sum[(\rho_{i,\lambda}^{SR_{Ref}}-\hat{\rho}_{\lambda}^{SR_{Ref}})^2][(\rho_{i,\lambda}^{SR_{Sen}}-\hat{\rho}_{\lambda}^{SR_{Sen}})^2]}}\right)^2
+\end{math}
+\end{frame}
+
+\subsection{Cross Validation}
+\begin{frame}
+\frametitle{Methods: Cross Validation}
+Results from Validations A to H are compared
+\begin{itemize}
+\item for the entire scenes over land
+\item for the entire scenes over water
+\item per Sentinel-2 bands over land
+\item for Sentinel-2 bands over water
+\item for Sentinel-3 bands over land
+\end{itemize}
+\end{frame}
+
+\subsection{Sentinel-3 Algorithm Comparison}
+\begin{frame}
+\frametitle{Methods: Sentinel-3 Algorithm Comparison}
+SYN/OLCI-iCOR SR Comparison:\newline\newline
+Mean surface reflectance and their difference to the reference data of validations G (SYN) and H (OLCI-iCOR) are compared in one graph.
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{Metadata}
+
+\subsection{Reference Data Map}
+\begin{frame}
+\frametitle{Metadata}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{Reference_Data_Map.png}
+\end{center}
+\end{frame}
+
+\subsection{Scene Acquisition}
+\begin{frame}
+\frametitle{Metadata}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{Scene_Acquisition.png}
+\end{center}
+\end{frame}
+
+\subsection{Scene Acquisition Difference}
+\begin{frame}
+\frametitle{Metadata}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{Scene_Acquisition_Difference.png}
+\end{center}
+\end{frame}
+
+\subsection{Pixel Size Difference Sentinel-2}
+\begin{frame}
+\frametitle{Metadata}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{Scene_Resolution_S2.png}
+\end{center}
+\end{frame}
+
+\subsection{Pixel Size Difference Sentinel-3}
+\begin{frame}
+\frametitle{Metadata}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{Scene_Resolution_S3.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{A Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{A Land Coverage Map}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Coverage Map}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{A Land Cropped Maps}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{A Land Mask}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Mask}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{A Land Masked}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Masked}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{A Land SR Distribution}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water SR Distribution}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{A Land Mean SR}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Mean SR}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{A Land Mean APU}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Mean APU}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{A Land Band APU}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Band APU}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{A Land Errors}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Errors}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{A Land Mean Table}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Mean Table}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{A Land Band Table}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Band Table}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{A Water}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{A Water Coverage Map}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{A Water Cropped Maps}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{A Water Mask}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Mask}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{A Water Masked}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Masked}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{A Water SR Distribution}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{A Water Mean SR}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{A Water Mean APU}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{A Water Band APU}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Band APU}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{A Water Errors}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Errors}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{A Water Mean Table}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{A Water Band Table}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Band Table}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{B Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{B Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{B Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{B Land Mask}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Mask}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Mask}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{B Land Masked}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Masked}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Masked}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{B Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{B Land Mean SR}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{B Land Mean APU}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{B Land Band APU}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Band APU}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{B Land Errors}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Errors}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Errors}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{B Land Mean Table}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{B Land Band Table}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Band Table}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{C Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{C Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{C Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{C Land Mask}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Mask}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{C Land Masked}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Masked}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{C Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{C Land Mean SR}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{C Land Mean APU}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{C Land Band APU}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Band APU}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{C Land Errors}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Errors}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{C Land Mean Table}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{C Land Band Table}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Band Table}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%%-----------------------------------------------------------------
+%%-----------------------------------------------------------------
+\section{D Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{D Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{D Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{D Land Mask}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Mask}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{D Land Masked}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Masked}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{D Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{D Land Mean SR}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{D Land Mean APU}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{D Land Band APU}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Band APU}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{D Land Errors}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Errors}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{D Land Mean Table}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{D Land Band Table}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Band Table}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{E Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{E Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{E Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{E Land Mask}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Mask}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{E Land Masked}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Masked}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{E Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{E Land Mean SR}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{E Land Mean APU}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{E Land Band APU}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Band APU}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{E Land Errors}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Errors}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{E Land Mean Table}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{E Land Band Table}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Band Table}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{F Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{F Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{F Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{F Land Mask}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Mask}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{F Land Masked}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Masked}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{F Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{F Land Mean SR}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{F Land Mean APU}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{F Land Band APU}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Band APU}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{F Land Errors}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Errors}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{F Land Mean Table}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{F Land Band Table}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Band Table}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{G Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{G Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Coverage Map}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{G Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Cropped Maps}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{G Land Mask}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Mask}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{G Land Masked}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Masked}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{G Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land SR Distribution}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{G Land Mean SR}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Mean SR}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{G Land Mean APU}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Mean APU}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{G Land Band APU}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Band APU}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{G Land Errors}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Errors}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{G Land Mean Table}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Mean Table}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+%
+\subsection{Band Table}
+\begin{frame}
+\label{G Land Band Table}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Band Table}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{H Land}
+
+\subsection{Coverage Map}
+\begin{frame}
+\label{H Land Coverage Map}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Coverage Map}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_TCI_coverage_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Cropped Maps}
+\begin{frame}
+\label{H Land Cropped Maps}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Cropped Maps}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_cropped_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Mask}
+\begin{frame}
+\label{H Land Mask}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Mask}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_mask_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{Masked}
+\begin{frame}
+\label{H Land Masked}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Masked}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_masked_maps.png}
+\end{center}
+\end{frame}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{H Land SR Distribution}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land SR Distribution}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_box_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{H Land Mean SR}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Mean SR}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{H Land Mean APU}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Mean APU}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_plotAllBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Band APU}
+\begin{frame}
+\label{H Land Band APU}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Band APU}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_plotIndBands.png}
+\end{center}
+\end{frame}
+
+\subsection{Errors}
+\begin{frame}
+\label{H Land Errors}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Errors}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_plotError.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Table}
+\begin{frame}
+\label{H Land Mean Table}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Mean Table}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_summary_Scene.png}
+\end{center}
+\end{frame}
+
+\subsection{Band Table}
+\begin{frame}
+\label{H Land Band Table}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Band Table}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_summary_Bands.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\section{Cross Validation}
+
+\subsection{SR Distribution}
+\begin{frame}
+\label{SR Distribution Scenes Land}
+\frametitle{\centerline{SR Distribution over Land}\\\centerline{\hfill 
+Mean SR\hspace{0.2cm}\hyperlink{Mean SR Scenes Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Distribution_Plot_Scenes_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{SR Distribution Scenes Water}
+\frametitle{\centerline{SR Distribution over Water}\\\centerline{\hfill 
+Mean SR\hspace{0.2cm}\hyperlink{Mean SR Scenes Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Distribution_Plot_Scenes_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{SR Distribution S2Bands Land}
+\frametitle{\centerline{SR Distribution per Band over Land (Sentinel-2)}\\\centerline{\hfill 
+Mean SR\hspace{0.2cm}\hyperlink{Mean SR S2Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Distribution_Plot_S2Bands_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{SR Distribution S2Bands Water}
+\frametitle{\centerline{SR Distribution per Band over Water (Sentinel-2)}\\\centerline{\hfill 
+Mean SR\hspace{0.2cm}\hyperlink{Mean SR S2Bands Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Distribution_Plot_S2Bands_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{SR Distribution S3Bands Land}
+\frametitle{\centerline{SR Distribution per Band over Land (Sentinel-3)}\\\centerline{\hfill 
+Mean SR\hspace{0.2cm}\hyperlink{Mean SR S3Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Distribution_Plot_S3Bands_Land.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR}
+\begin{frame}
+\label{Mean SR Scenes Land}
+\frametitle{\centerline{Mean SR over Land}\\\centerline{
+\hspace{0.2cm}\hyperlink{SR Distribution Scenes Land}{\beamerreturnbutton}\hspace{0.2cm}SR Distribution\hfill 
+Mean APU Values\hspace{0.2cm}\hyperlink{Mean APU Scenes Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Mean_and_Difference_Plot_Scenes_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean SR Scenes Water}
+\frametitle{\centerline{Mean SR over Water}\\\centerline{
+\hspace{0.2cm}\hyperlink{SR Distribution Scenes Water}{\beamerreturnbutton}\hspace{0.2cm}SR Distribution\hfill 
+Mean APU Values\hspace{0.2cm}\hyperlink{Mean APU Scenes Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Mean_and_Difference_Plot_Scenes_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean SR S2Bands Land}
+\frametitle{\centerline{Mean SR per Band over Land (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{SR Distribution S2Bands Land}{\beamerreturnbutton}\hspace{0.2cm}SR Distribution\hfill 
+Mean APU Values\hspace{0.2cm}\hyperlink{Mean APU S2Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Mean_and_Difference_Plot_S2Bands_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean SR S2Bands Water}
+\frametitle{\centerline{Mean SR per Band over Water (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{SR Distribution S2Bands Water}{\beamerreturnbutton}\hspace{0.2cm}SR Distribution\hfill 
+Mean APU Values\hspace{0.2cm}\hyperlink{Mean APU S2Bands Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Mean_and_Difference_Plot_S2Bands_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean SR S3Bands Land}
+\frametitle{\centerline{Mean SR per Band over Land (Sentinel-3)}\\\centerline{
+\hspace{0.2cm}\hyperlink{SR Distribution S3Bands Land}{\beamerreturnbutton}\hspace{0.2cm}SR Distribution\hfill 
+Mean APU Values\hspace{0.2cm}\hyperlink{Mean APU S3Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{SR_Mean_and_Difference_Plot_S3Bands_Land.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean APU}
+\begin{frame}
+\label{Mean APU Scenes Land}
+\frametitle{\centerline{Mean APU Values over Land}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean SR Scenes Land}{\beamerreturnbutton}\hspace{0.2cm}Mean SR\hfill
+Mean Relative APU Values\hspace{0.2cm}\hyperlink{Mean Relative APU Scenes Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{APU_Plot_Scenes_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean APU Scenes Water}
+\frametitle{\centerline{Mean APU Values over Water}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean SR Scenes Water}{\beamerreturnbutton}\hspace{0.2cm}Mean SR\hfill
+Mean Relative APU Values\hspace{0.2cm}\hyperlink{Mean Relative APU Scenes Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{APU_Plot_Scenes_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean APU S2Bands Land}
+\frametitle{\centerline{Mean APU Values per Band over Land (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean SR S2Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean SR\hfill
+Mean Relative APU Values\hspace{0.2cm}\hyperlink{Mean Relative APU S2Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{APU_Plot_S2Bands_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean APU S2Bands Water}
+\frametitle{\centerline{Mean APU Values per Band over Water (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean SR S2Bands Water}{\beamerreturnbutton}\hspace{0.2cm}Mean SR\hfill
+Mean Relative APU Values\hspace{0.2cm}\hyperlink{Mean Relative APU S2Bands Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{APU_Plot_S2Bands_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean APU S3Bands Land}
+\frametitle{\centerline{Mean APU Values per Band over Land (Sentinel-3)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean SR S3Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean SR\hfill
+Mean Relative APU Values\hspace{0.2cm}\hyperlink{Mean Relative APU S3Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{APU_Plot_S3Bands_Land.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Relative APU}
+\begin{frame}
+\label{Mean Relative APU Scenes Land}
+\frametitle{\centerline{Mean Relative APU Values over Land}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean APU Scenes Land}{\beamerreturnbutton}\hspace{0.2cm}Mean APU Values\hfill
+Mean Error Measures\hspace{0.2cm}\hyperlink{Mean Errors Scenes Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Relative_APU_Plot_Scenes_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Relative APU Scenes Water}
+\frametitle{\centerline{Mean Relative APU Values over Water}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean APU Scenes Water}{\beamerreturnbutton}\hspace{0.2cm}Mean APU Values\hfill
+Mean Error Measures\hspace{0.2cm}\hyperlink{Mean Errors Scenes Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Relative_APU_Plot_Scenes_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Relative APU S2Bands Land}
+\frametitle{\centerline{Mean Relative APU Values per Band over Land (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean APU S2Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean APU Values\hfill
+Mean Error Measures\hspace{0.2cm}\hyperlink{Mean Errors S2Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Relative_APU_Plot_S2Bands_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Relative APU S2Bands Water}
+\frametitle{\centerline{Mean Relative APU Values per Band over Water (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean APU S2Bands Water}{\beamerreturnbutton}\hspace{0.2cm}Mean APU Values\hfill
+Mean Error Measures\hspace{0.2cm}\hyperlink{Mean Errors S2Bands Water}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Relative_APU_Plot_S2Bands_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Relative APU S3Bands Land}
+\frametitle{\centerline{Mean Relative APU Values per Band over Land (Sentinel-3)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean APU S3Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean APU Values\hfill
+Mean Error Measures\hspace{0.2cm}\hyperlink{Mean Errors S3Bands Land}{\beamerskipbutton}\hspace{0.3cm}}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Relative_APU_Plot_S3Bands_Land.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean Errors}
+\begin{frame}
+\label{Mean Errors Scenes Land}
+\frametitle{\centerline{Mean Error Measures over Land}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean Relative APU Scenes Land}{\beamerreturnbutton}\hspace{0.2cm}Mean Relative APU Values\hfill}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Error_Plot_Scenes_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Errors Scenes Water}
+\frametitle{\centerline{Mean Error Measures  over Water}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean Relative APU Scenes Water}{\beamerreturnbutton}\hspace{0.2cm}Mean Relative APU Values\hfill}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Error_Plot_Scenes_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Errors S2Bands Land}
+\frametitle{\centerline{Mean Error Measures  per Band over Land (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean Relative APU S2Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean Relative APU Values\hfill}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Error_Plot_S2Bands_Land.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Errors S2Bands Water}
+\frametitle{\centerline{Mean Error Measures  per Band over Water (Sentinel-2)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean Relative APU S2Bands Water}{\beamerreturnbutton}\hspace{0.2cm}Mean Relative APU Values\hfill}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Error_Plot_S2Bands_Water.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\label{Mean Errors S3Bands Land}
+\frametitle{\centerline{Mean Error Measures  per Band over Land (Sentinel-3)}\\\centerline{
+\hspace{0.2cm}\hyperlink{Mean Relative APU S3Bands Land}{\beamerreturnbutton}\hspace{0.2cm}Mean Relative APU Values\hfill}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Error_Plot_S3Bands_Land.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+%-----------------------------------------------------------------
+\subsection{Sentinel-3 Algorithm Comparison}
+\begin{frame}
+\frametitle{\centerline{Sentinel-3 Algorithm Comparison}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]{Custom_Plot_IT_S3_line_plot.png}
+\end{center}
+\end{frame}
+%-----------------------------------------------------------------
+\end{document}

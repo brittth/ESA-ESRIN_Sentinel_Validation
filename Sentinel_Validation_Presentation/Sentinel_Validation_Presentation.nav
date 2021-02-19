@@ -1,0 +1,593 @@
+\headcommand {\slideentry {0}{0}{1}{1/1}{}{0}}
+\headcommand {\beamer@framepages {1}{1}}
+\headcommand {\slideentry {0}{0}{2}{2/2}{}{0}}
+\headcommand {\beamer@framepages {2}{2}}
+\headcommand {\beamer@sectionpages {1}{2}}
+\headcommand {\beamer@subsectionpages {1}{2}}
+\headcommand {\sectionentry {1}{Methods}{3}{Methods}{0}}
+\headcommand {\slideentry {1}{0}{1}{3/3}{}{0}}
+\headcommand {\beamer@framepages {3}{3}}
+\headcommand {\beamer@subsectionpages {3}{3}}
+\headcommand {\beamer@subsectionentry {0}{1}{1}{4}{Prerequisites}}
+\headcommand {\slideentry {1}{1}{1}{4/4}{Prerequisites}{0}}
+\headcommand {\beamer@framepages {4}{4}}
+\headcommand {\beamer@subsectionpages {4}{4}}
+\headcommand {\beamer@subsectionentry {0}{1}{2}{5}{Overview}}
+\headcommand {\slideentry {1}{2}{1}{5/5}{Overview}{0}}
+\headcommand {\beamer@framepages {5}{5}}
+\headcommand {\slideentry {1}{2}{2}{6/6}{Overview}{0}}
+\headcommand {\beamer@framepages {6}{6}}
+\headcommand {\beamer@subsectionpages {5}{6}}
+\headcommand {\beamer@subsectionentry {0}{1}{3}{7}{Metadata}}
+\headcommand {\slideentry {1}{3}{1}{7/7}{Metadata}{0}}
+\headcommand {\beamer@framepages {7}{7}}
+\headcommand {\beamer@subsectionpages {7}{7}}
+\headcommand {\beamer@subsectionentry {0}{1}{4}{8}{Spectral Resampling}}
+\headcommand {\slideentry {1}{4}{1}{8/8}{Spectral Resampling}{0}}
+\headcommand {\beamer@framepages {8}{8}}
+\headcommand {\beamer@subsectionpages {8}{8}}
+\headcommand {\beamer@subsectionentry {0}{1}{5}{9}{Spatial Resampling}}
+\headcommand {\slideentry {1}{5}{1}{9/9}{Spatial Resampling}{0}}
+\headcommand {\beamer@framepages {9}{9}}
+\headcommand {\beamer@subsectionpages {9}{9}}
+\headcommand {\beamer@subsectionentry {0}{1}{6}{10}{Masking}}
+\headcommand {\slideentry {1}{6}{1}{10/10}{Masking}{0}}
+\headcommand {\beamer@framepages {10}{10}}
+\headcommand {\beamer@subsectionpages {10}{10}}
+\headcommand {\beamer@subsectionentry {0}{1}{7}{11}{Comparison}}
+\headcommand {\slideentry {1}{7}{1}{11/11}{Comparison}{0}}
+\headcommand {\beamer@framepages {11}{11}}
+\headcommand {\beamer@subsectionpages {11}{11}}
+\headcommand {\beamer@subsectionentry {0}{1}{8}{12}{APU Statistics}}
+\headcommand {\slideentry {1}{8}{1}{12/12}{APU Statistics}{0}}
+\headcommand {\beamer@framepages {12}{12}}
+\headcommand {\slideentry {1}{8}{2}{13/13}{APU Statistics}{0}}
+\headcommand {\beamer@framepages {13}{13}}
+\headcommand {\beamer@subsectionpages {12}{13}}
+\headcommand {\beamer@subsectionentry {0}{1}{9}{14}{Cross Validation}}
+\headcommand {\slideentry {1}{9}{1}{14/14}{Cross Validation}{0}}
+\headcommand {\beamer@framepages {14}{14}}
+\headcommand {\beamer@subsectionpages {14}{14}}
+\headcommand {\beamer@subsectionentry {0}{1}{10}{15}{Sentinel-3 Algorithm Comparison}}
+\headcommand {\slideentry {1}{10}{1}{15/15}{Sentinel-3 Algorithm Comparison}{0}}
+\headcommand {\beamer@framepages {15}{15}}
+\headcommand {\beamer@sectionpages {3}{15}}
+\headcommand {\beamer@subsectionpages {15}{15}}
+\headcommand {\sectionentry {2}{Metadata}{16}{Metadata}{0}}
+\headcommand {\slideentry {2}{0}{1}{16/16}{}{0}}
+\headcommand {\beamer@framepages {16}{16}}
+\headcommand {\beamer@subsectionpages {16}{16}}
+\headcommand {\beamer@subsectionentry {0}{2}{1}{17}{Reference Data Map}}
+\headcommand {\slideentry {2}{1}{1}{17/17}{Reference Data Map}{0}}
+\headcommand {\beamer@framepages {17}{17}}
+\headcommand {\beamer@subsectionpages {17}{17}}
+\headcommand {\beamer@subsectionentry {0}{2}{2}{18}{Scene Acquisition}}
+\headcommand {\slideentry {2}{2}{1}{18/18}{Scene Acquisition}{0}}
+\headcommand {\beamer@framepages {18}{18}}
+\headcommand {\beamer@subsectionpages {18}{18}}
+\headcommand {\beamer@subsectionentry {0}{2}{3}{19}{Scene Acquisition Difference}}
+\headcommand {\slideentry {2}{3}{1}{19/19}{Scene Acquisition Difference}{0}}
+\headcommand {\beamer@framepages {19}{19}}
+\headcommand {\beamer@subsectionpages {19}{19}}
+\headcommand {\beamer@subsectionentry {0}{2}{4}{20}{Pixel Size Difference Sentinel-2}}
+\headcommand {\slideentry {2}{4}{1}{20/20}{Pixel Size Difference Sentinel-2}{0}}
+\headcommand {\beamer@framepages {20}{20}}
+\headcommand {\beamer@subsectionpages {20}{20}}
+\headcommand {\beamer@subsectionentry {0}{2}{5}{21}{Pixel Size Difference Sentinel-3}}
+\headcommand {\slideentry {2}{5}{1}{21/21}{Pixel Size Difference Sentinel-3}{0}}
+\headcommand {\beamer@framepages {21}{21}}
+\headcommand {\beamer@sectionpages {16}{21}}
+\headcommand {\beamer@subsectionpages {21}{21}}
+\headcommand {\sectionentry {3}{A Land}{22}{A Land}{0}}
+\headcommand {\slideentry {3}{0}{1}{22/22}{}{0}}
+\headcommand {\beamer@framepages {22}{22}}
+\headcommand {\beamer@subsectionpages {22}{22}}
+\headcommand {\beamer@subsectionentry {0}{3}{1}{23}{Coverage Map}}
+\headcommand {\slideentry {3}{1}{1}{23/23}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {23}{23}}
+\headcommand {\beamer@subsectionpages {23}{23}}
+\headcommand {\beamer@subsectionentry {0}{3}{2}{24}{Cropped Maps}}
+\headcommand {\slideentry {3}{2}{1}{24/24}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {24}{24}}
+\headcommand {\beamer@subsectionpages {24}{24}}
+\headcommand {\beamer@subsectionentry {0}{3}{3}{25}{Mask}}
+\headcommand {\slideentry {3}{3}{1}{25/25}{Mask}{0}}
+\headcommand {\beamer@framepages {25}{25}}
+\headcommand {\beamer@subsectionpages {25}{25}}
+\headcommand {\beamer@subsectionentry {0}{3}{4}{26}{Masked}}
+\headcommand {\slideentry {3}{4}{1}{26/26}{Masked}{0}}
+\headcommand {\beamer@framepages {26}{26}}
+\headcommand {\beamer@subsectionpages {26}{26}}
+\headcommand {\beamer@subsectionentry {0}{3}{5}{27}{SR Distribution}}
+\headcommand {\slideentry {3}{5}{1}{27/27}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {27}{27}}
+\headcommand {\beamer@subsectionpages {27}{27}}
+\headcommand {\beamer@subsectionentry {0}{3}{6}{28}{Mean SR}}
+\headcommand {\slideentry {3}{6}{1}{28/28}{Mean SR}{0}}
+\headcommand {\beamer@framepages {28}{28}}
+\headcommand {\beamer@subsectionpages {28}{28}}
+\headcommand {\beamer@subsectionentry {0}{3}{7}{29}{Mean APU}}
+\headcommand {\slideentry {3}{7}{1}{29/29}{Mean APU}{0}}
+\headcommand {\beamer@framepages {29}{29}}
+\headcommand {\beamer@subsectionpages {29}{29}}
+\headcommand {\beamer@subsectionentry {0}{3}{8}{30}{Band APU}}
+\headcommand {\slideentry {3}{8}{1}{30/30}{Band APU}{0}}
+\headcommand {\beamer@framepages {30}{30}}
+\headcommand {\beamer@subsectionpages {30}{30}}
+\headcommand {\beamer@subsectionentry {0}{3}{9}{31}{Errors}}
+\headcommand {\slideentry {3}{9}{1}{31/31}{Errors}{0}}
+\headcommand {\beamer@framepages {31}{31}}
+\headcommand {\beamer@subsectionpages {31}{31}}
+\headcommand {\beamer@subsectionentry {0}{3}{10}{32}{Mean Table}}
+\headcommand {\slideentry {3}{10}{1}{32/32}{Mean Table}{0}}
+\headcommand {\beamer@framepages {32}{32}}
+\headcommand {\beamer@subsectionpages {32}{32}}
+\headcommand {\beamer@subsectionentry {0}{3}{11}{33}{Band Table}}
+\headcommand {\slideentry {3}{11}{1}{33/33}{Band Table}{0}}
+\headcommand {\beamer@framepages {33}{33}}
+\headcommand {\beamer@sectionpages {22}{33}}
+\headcommand {\beamer@subsectionpages {33}{33}}
+\headcommand {\sectionentry {4}{A Water}{34}{A Water}{0}}
+\headcommand {\slideentry {4}{0}{1}{34/34}{}{0}}
+\headcommand {\beamer@framepages {34}{34}}
+\headcommand {\beamer@subsectionpages {34}{34}}
+\headcommand {\beamer@subsectionentry {0}{4}{1}{35}{Coverage Map}}
+\headcommand {\slideentry {4}{1}{1}{35/35}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {35}{35}}
+\headcommand {\beamer@subsectionpages {35}{35}}
+\headcommand {\beamer@subsectionentry {0}{4}{2}{36}{Cropped Maps}}
+\headcommand {\slideentry {4}{2}{1}{36/36}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {36}{36}}
+\headcommand {\beamer@subsectionpages {36}{36}}
+\headcommand {\beamer@subsectionentry {0}{4}{3}{37}{Mask}}
+\headcommand {\slideentry {4}{3}{1}{37/37}{Mask}{0}}
+\headcommand {\beamer@framepages {37}{37}}
+\headcommand {\beamer@subsectionpages {37}{37}}
+\headcommand {\beamer@subsectionentry {0}{4}{4}{38}{Masked}}
+\headcommand {\slideentry {4}{4}{1}{38/38}{Masked}{0}}
+\headcommand {\beamer@framepages {38}{38}}
+\headcommand {\beamer@subsectionpages {38}{38}}
+\headcommand {\beamer@subsectionentry {0}{4}{5}{39}{SR Distribution}}
+\headcommand {\slideentry {4}{5}{1}{39/39}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {39}{39}}
+\headcommand {\beamer@subsectionpages {39}{39}}
+\headcommand {\beamer@subsectionentry {0}{4}{6}{40}{Mean SR}}
+\headcommand {\slideentry {4}{6}{1}{40/40}{Mean SR}{0}}
+\headcommand {\beamer@framepages {40}{40}}
+\headcommand {\beamer@subsectionpages {40}{40}}
+\headcommand {\beamer@subsectionentry {0}{4}{7}{41}{Mean APU}}
+\headcommand {\slideentry {4}{7}{1}{41/41}{Mean APU}{0}}
+\headcommand {\beamer@framepages {41}{41}}
+\headcommand {\beamer@subsectionpages {41}{41}}
+\headcommand {\beamer@subsectionentry {0}{4}{8}{42}{Band APU}}
+\headcommand {\slideentry {4}{8}{1}{42/42}{Band APU}{0}}
+\headcommand {\beamer@framepages {42}{42}}
+\headcommand {\beamer@subsectionpages {42}{42}}
+\headcommand {\beamer@subsectionentry {0}{4}{9}{43}{Errors}}
+\headcommand {\slideentry {4}{9}{1}{43/43}{Errors}{0}}
+\headcommand {\beamer@framepages {43}{43}}
+\headcommand {\beamer@subsectionpages {43}{43}}
+\headcommand {\beamer@subsectionentry {0}{4}{10}{44}{Mean Table}}
+\headcommand {\slideentry {4}{10}{1}{44/44}{Mean Table}{0}}
+\headcommand {\beamer@framepages {44}{44}}
+\headcommand {\beamer@subsectionpages {44}{44}}
+\headcommand {\beamer@subsectionentry {0}{4}{11}{45}{Band Table}}
+\headcommand {\slideentry {4}{11}{1}{45/45}{Band Table}{0}}
+\headcommand {\beamer@framepages {45}{45}}
+\headcommand {\beamer@sectionpages {34}{45}}
+\headcommand {\beamer@subsectionpages {45}{45}}
+\headcommand {\sectionentry {5}{B Land}{46}{B Land}{0}}
+\headcommand {\slideentry {5}{0}{1}{46/46}{}{0}}
+\headcommand {\beamer@framepages {46}{46}}
+\headcommand {\beamer@subsectionpages {46}{46}}
+\headcommand {\beamer@subsectionentry {0}{5}{1}{47}{Coverage Map}}
+\headcommand {\slideentry {5}{1}{1}{47/47}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {47}{47}}
+\headcommand {\beamer@subsectionpages {47}{47}}
+\headcommand {\beamer@subsectionentry {0}{5}{2}{48}{Cropped Maps}}
+\headcommand {\slideentry {5}{2}{1}{48/48}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {48}{48}}
+\headcommand {\beamer@subsectionpages {48}{48}}
+\headcommand {\beamer@subsectionentry {0}{5}{3}{49}{Mask}}
+\headcommand {\slideentry {5}{3}{1}{49/49}{Mask}{0}}
+\headcommand {\beamer@framepages {49}{49}}
+\headcommand {\beamer@subsectionpages {49}{49}}
+\headcommand {\beamer@subsectionentry {0}{5}{4}{50}{Masked}}
+\headcommand {\slideentry {5}{4}{1}{50/50}{Masked}{0}}
+\headcommand {\beamer@framepages {50}{50}}
+\headcommand {\beamer@subsectionpages {50}{50}}
+\headcommand {\beamer@subsectionentry {0}{5}{5}{51}{SR Distribution}}
+\headcommand {\slideentry {5}{5}{1}{51/51}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {51}{51}}
+\headcommand {\beamer@subsectionpages {51}{51}}
+\headcommand {\beamer@subsectionentry {0}{5}{6}{52}{Mean SR}}
+\headcommand {\slideentry {5}{6}{1}{52/52}{Mean SR}{0}}
+\headcommand {\beamer@framepages {52}{52}}
+\headcommand {\beamer@subsectionpages {52}{52}}
+\headcommand {\beamer@subsectionentry {0}{5}{7}{53}{Mean APU}}
+\headcommand {\slideentry {5}{7}{1}{53/53}{Mean APU}{0}}
+\headcommand {\beamer@framepages {53}{53}}
+\headcommand {\beamer@subsectionpages {53}{53}}
+\headcommand {\beamer@subsectionentry {0}{5}{8}{54}{Band APU}}
+\headcommand {\slideentry {5}{8}{1}{54/54}{Band APU}{0}}
+\headcommand {\beamer@framepages {54}{54}}
+\headcommand {\beamer@subsectionpages {54}{54}}
+\headcommand {\beamer@subsectionentry {0}{5}{9}{55}{Errors}}
+\headcommand {\slideentry {5}{9}{1}{55/55}{Errors}{0}}
+\headcommand {\beamer@framepages {55}{55}}
+\headcommand {\beamer@subsectionpages {55}{55}}
+\headcommand {\beamer@subsectionentry {0}{5}{10}{56}{Mean Table}}
+\headcommand {\slideentry {5}{10}{1}{56/56}{Mean Table}{0}}
+\headcommand {\beamer@framepages {56}{56}}
+\headcommand {\beamer@subsectionpages {56}{56}}
+\headcommand {\beamer@subsectionentry {0}{5}{11}{57}{Band Table}}
+\headcommand {\slideentry {5}{11}{1}{57/57}{Band Table}{0}}
+\headcommand {\beamer@framepages {57}{57}}
+\headcommand {\beamer@sectionpages {46}{57}}
+\headcommand {\beamer@subsectionpages {57}{57}}
+\headcommand {\sectionentry {6}{C Land}{58}{C Land}{0}}
+\headcommand {\slideentry {6}{0}{1}{58/58}{}{0}}
+\headcommand {\beamer@framepages {58}{58}}
+\headcommand {\beamer@subsectionpages {58}{58}}
+\headcommand {\beamer@subsectionentry {0}{6}{1}{59}{Coverage Map}}
+\headcommand {\slideentry {6}{1}{1}{59/59}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {59}{59}}
+\headcommand {\beamer@subsectionpages {59}{59}}
+\headcommand {\beamer@subsectionentry {0}{6}{2}{60}{Cropped Maps}}
+\headcommand {\slideentry {6}{2}{1}{60/60}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {60}{60}}
+\headcommand {\beamer@subsectionpages {60}{60}}
+\headcommand {\beamer@subsectionentry {0}{6}{3}{61}{Mask}}
+\headcommand {\slideentry {6}{3}{1}{61/61}{Mask}{0}}
+\headcommand {\beamer@framepages {61}{61}}
+\headcommand {\beamer@subsectionpages {61}{61}}
+\headcommand {\beamer@subsectionentry {0}{6}{4}{62}{Masked}}
+\headcommand {\slideentry {6}{4}{1}{62/62}{Masked}{0}}
+\headcommand {\beamer@framepages {62}{62}}
+\headcommand {\beamer@subsectionpages {62}{62}}
+\headcommand {\beamer@subsectionentry {0}{6}{5}{63}{SR Distribution}}
+\headcommand {\slideentry {6}{5}{1}{63/63}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {63}{63}}
+\headcommand {\beamer@subsectionpages {63}{63}}
+\headcommand {\beamer@subsectionentry {0}{6}{6}{64}{Mean SR}}
+\headcommand {\slideentry {6}{6}{1}{64/64}{Mean SR}{0}}
+\headcommand {\beamer@framepages {64}{64}}
+\headcommand {\beamer@subsectionpages {64}{64}}
+\headcommand {\beamer@subsectionentry {0}{6}{7}{65}{Mean APU}}
+\headcommand {\slideentry {6}{7}{1}{65/65}{Mean APU}{0}}
+\headcommand {\beamer@framepages {65}{65}}
+\headcommand {\beamer@subsectionpages {65}{65}}
+\headcommand {\beamer@subsectionentry {0}{6}{8}{66}{Band APU}}
+\headcommand {\slideentry {6}{8}{1}{66/66}{Band APU}{0}}
+\headcommand {\beamer@framepages {66}{66}}
+\headcommand {\beamer@subsectionpages {66}{66}}
+\headcommand {\beamer@subsectionentry {0}{6}{9}{67}{Errors}}
+\headcommand {\slideentry {6}{9}{1}{67/67}{Errors}{0}}
+\headcommand {\beamer@framepages {67}{67}}
+\headcommand {\beamer@subsectionpages {67}{67}}
+\headcommand {\beamer@subsectionentry {0}{6}{10}{68}{Mean Table}}
+\headcommand {\slideentry {6}{10}{1}{68/68}{Mean Table}{0}}
+\headcommand {\beamer@framepages {68}{68}}
+\headcommand {\beamer@subsectionpages {68}{68}}
+\headcommand {\beamer@subsectionentry {0}{6}{11}{69}{Band Table}}
+\headcommand {\slideentry {6}{11}{1}{69/69}{Band Table}{0}}
+\headcommand {\beamer@framepages {69}{69}}
+\headcommand {\beamer@sectionpages {58}{69}}
+\headcommand {\beamer@subsectionpages {69}{69}}
+\headcommand {\sectionentry {7}{D Land}{70}{D Land}{0}}
+\headcommand {\slideentry {7}{0}{1}{70/70}{}{0}}
+\headcommand {\beamer@framepages {70}{70}}
+\headcommand {\beamer@subsectionpages {70}{70}}
+\headcommand {\beamer@subsectionentry {0}{7}{1}{71}{Coverage Map}}
+\headcommand {\slideentry {7}{1}{1}{71/71}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {71}{71}}
+\headcommand {\beamer@subsectionpages {71}{71}}
+\headcommand {\beamer@subsectionentry {0}{7}{2}{72}{Cropped Maps}}
+\headcommand {\slideentry {7}{2}{1}{72/72}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {72}{72}}
+\headcommand {\beamer@subsectionpages {72}{72}}
+\headcommand {\beamer@subsectionentry {0}{7}{3}{73}{Mask}}
+\headcommand {\slideentry {7}{3}{1}{73/73}{Mask}{0}}
+\headcommand {\beamer@framepages {73}{73}}
+\headcommand {\beamer@subsectionpages {73}{73}}
+\headcommand {\beamer@subsectionentry {0}{7}{4}{74}{Masked}}
+\headcommand {\slideentry {7}{4}{1}{74/74}{Masked}{0}}
+\headcommand {\beamer@framepages {74}{74}}
+\headcommand {\beamer@subsectionpages {74}{74}}
+\headcommand {\beamer@subsectionentry {0}{7}{5}{75}{SR Distribution}}
+\headcommand {\slideentry {7}{5}{1}{75/75}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {75}{75}}
+\headcommand {\beamer@subsectionpages {75}{75}}
+\headcommand {\beamer@subsectionentry {0}{7}{6}{76}{Mean SR}}
+\headcommand {\slideentry {7}{6}{1}{76/76}{Mean SR}{0}}
+\headcommand {\beamer@framepages {76}{76}}
+\headcommand {\beamer@subsectionpages {76}{76}}
+\headcommand {\beamer@subsectionentry {0}{7}{7}{77}{Mean APU}}
+\headcommand {\slideentry {7}{7}{1}{77/77}{Mean APU}{0}}
+\headcommand {\beamer@framepages {77}{77}}
+\headcommand {\beamer@subsectionpages {77}{77}}
+\headcommand {\beamer@subsectionentry {0}{7}{8}{78}{Band APU}}
+\headcommand {\slideentry {7}{8}{1}{78/78}{Band APU}{0}}
+\headcommand {\beamer@framepages {78}{78}}
+\headcommand {\beamer@subsectionpages {78}{78}}
+\headcommand {\beamer@subsectionentry {0}{7}{9}{79}{Errors}}
+\headcommand {\slideentry {7}{9}{1}{79/79}{Errors}{0}}
+\headcommand {\beamer@framepages {79}{79}}
+\headcommand {\beamer@subsectionpages {79}{79}}
+\headcommand {\beamer@subsectionentry {0}{7}{10}{80}{Mean Table}}
+\headcommand {\slideentry {7}{10}{1}{80/80}{Mean Table}{0}}
+\headcommand {\beamer@framepages {80}{80}}
+\headcommand {\beamer@subsectionpages {80}{80}}
+\headcommand {\beamer@subsectionentry {0}{7}{11}{81}{Band Table}}
+\headcommand {\slideentry {7}{11}{1}{81/81}{Band Table}{0}}
+\headcommand {\beamer@framepages {81}{81}}
+\headcommand {\beamer@sectionpages {70}{81}}
+\headcommand {\beamer@subsectionpages {81}{81}}
+\headcommand {\sectionentry {8}{E Land}{82}{E Land}{0}}
+\headcommand {\slideentry {8}{0}{1}{82/82}{}{0}}
+\headcommand {\beamer@framepages {82}{82}}
+\headcommand {\beamer@subsectionpages {82}{82}}
+\headcommand {\beamer@subsectionentry {0}{8}{1}{83}{Coverage Map}}
+\headcommand {\slideentry {8}{1}{1}{83/83}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {83}{83}}
+\headcommand {\beamer@subsectionpages {83}{83}}
+\headcommand {\beamer@subsectionentry {0}{8}{2}{84}{Cropped Maps}}
+\headcommand {\slideentry {8}{2}{1}{84/84}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {84}{84}}
+\headcommand {\beamer@subsectionpages {84}{84}}
+\headcommand {\beamer@subsectionentry {0}{8}{3}{85}{Mask}}
+\headcommand {\slideentry {8}{3}{1}{85/85}{Mask}{0}}
+\headcommand {\beamer@framepages {85}{85}}
+\headcommand {\beamer@subsectionpages {85}{85}}
+\headcommand {\beamer@subsectionentry {0}{8}{4}{86}{Masked}}
+\headcommand {\slideentry {8}{4}{1}{86/86}{Masked}{0}}
+\headcommand {\beamer@framepages {86}{86}}
+\headcommand {\beamer@subsectionpages {86}{86}}
+\headcommand {\beamer@subsectionentry {0}{8}{5}{87}{SR Distribution}}
+\headcommand {\slideentry {8}{5}{1}{87/87}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {87}{87}}
+\headcommand {\beamer@subsectionpages {87}{87}}
+\headcommand {\beamer@subsectionentry {0}{8}{6}{88}{Mean SR}}
+\headcommand {\slideentry {8}{6}{1}{88/88}{Mean SR}{0}}
+\headcommand {\beamer@framepages {88}{88}}
+\headcommand {\beamer@subsectionpages {88}{88}}
+\headcommand {\beamer@subsectionentry {0}{8}{7}{89}{Mean APU}}
+\headcommand {\slideentry {8}{7}{1}{89/89}{Mean APU}{0}}
+\headcommand {\beamer@framepages {89}{89}}
+\headcommand {\beamer@subsectionpages {89}{89}}
+\headcommand {\beamer@subsectionentry {0}{8}{8}{90}{Band APU}}
+\headcommand {\slideentry {8}{8}{1}{90/90}{Band APU}{0}}
+\headcommand {\beamer@framepages {90}{90}}
+\headcommand {\beamer@subsectionpages {90}{90}}
+\headcommand {\beamer@subsectionentry {0}{8}{9}{91}{Errors}}
+\headcommand {\slideentry {8}{9}{1}{91/91}{Errors}{0}}
+\headcommand {\beamer@framepages {91}{91}}
+\headcommand {\beamer@subsectionpages {91}{91}}
+\headcommand {\beamer@subsectionentry {0}{8}{10}{92}{Mean Table}}
+\headcommand {\slideentry {8}{10}{1}{92/92}{Mean Table}{0}}
+\headcommand {\beamer@framepages {92}{92}}
+\headcommand {\beamer@subsectionpages {92}{92}}
+\headcommand {\beamer@subsectionentry {0}{8}{11}{93}{Band Table}}
+\headcommand {\slideentry {8}{11}{1}{93/93}{Band Table}{0}}
+\headcommand {\beamer@framepages {93}{93}}
+\headcommand {\beamer@sectionpages {82}{93}}
+\headcommand {\beamer@subsectionpages {93}{93}}
+\headcommand {\sectionentry {9}{F Land}{94}{F Land}{0}}
+\headcommand {\slideentry {9}{0}{1}{94/94}{}{0}}
+\headcommand {\beamer@framepages {94}{94}}
+\headcommand {\beamer@subsectionpages {94}{94}}
+\headcommand {\beamer@subsectionentry {0}{9}{1}{95}{Coverage Map}}
+\headcommand {\slideentry {9}{1}{1}{95/95}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {95}{95}}
+\headcommand {\beamer@subsectionpages {95}{95}}
+\headcommand {\beamer@subsectionentry {0}{9}{2}{96}{Cropped Maps}}
+\headcommand {\slideentry {9}{2}{1}{96/96}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {96}{96}}
+\headcommand {\beamer@subsectionpages {96}{96}}
+\headcommand {\beamer@subsectionentry {0}{9}{3}{97}{Mask}}
+\headcommand {\slideentry {9}{3}{1}{97/97}{Mask}{0}}
+\headcommand {\beamer@framepages {97}{97}}
+\headcommand {\beamer@subsectionpages {97}{97}}
+\headcommand {\beamer@subsectionentry {0}{9}{4}{98}{Masked}}
+\headcommand {\slideentry {9}{4}{1}{98/98}{Masked}{0}}
+\headcommand {\beamer@framepages {98}{98}}
+\headcommand {\beamer@subsectionpages {98}{98}}
+\headcommand {\beamer@subsectionentry {0}{9}{5}{99}{SR Distribution}}
+\headcommand {\slideentry {9}{5}{1}{99/99}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {99}{99}}
+\headcommand {\beamer@subsectionpages {99}{99}}
+\headcommand {\beamer@subsectionentry {0}{9}{6}{100}{Mean SR}}
+\headcommand {\slideentry {9}{6}{1}{100/100}{Mean SR}{0}}
+\headcommand {\beamer@framepages {100}{100}}
+\headcommand {\beamer@subsectionpages {100}{100}}
+\headcommand {\beamer@subsectionentry {0}{9}{7}{101}{Mean APU}}
+\headcommand {\slideentry {9}{7}{1}{101/101}{Mean APU}{0}}
+\headcommand {\beamer@framepages {101}{101}}
+\headcommand {\beamer@subsectionpages {101}{101}}
+\headcommand {\beamer@subsectionentry {0}{9}{8}{102}{Band APU}}
+\headcommand {\slideentry {9}{8}{1}{102/102}{Band APU}{0}}
+\headcommand {\beamer@framepages {102}{102}}
+\headcommand {\beamer@subsectionpages {102}{102}}
+\headcommand {\beamer@subsectionentry {0}{9}{9}{103}{Errors}}
+\headcommand {\slideentry {9}{9}{1}{103/103}{Errors}{0}}
+\headcommand {\beamer@framepages {103}{103}}
+\headcommand {\beamer@subsectionpages {103}{103}}
+\headcommand {\beamer@subsectionentry {0}{9}{10}{104}{Mean Table}}
+\headcommand {\slideentry {9}{10}{1}{104/104}{Mean Table}{0}}
+\headcommand {\beamer@framepages {104}{104}}
+\headcommand {\beamer@subsectionpages {104}{104}}
+\headcommand {\beamer@subsectionentry {0}{9}{11}{105}{Band Table}}
+\headcommand {\slideentry {9}{11}{1}{105/105}{Band Table}{0}}
+\headcommand {\beamer@framepages {105}{105}}
+\headcommand {\beamer@sectionpages {94}{105}}
+\headcommand {\beamer@subsectionpages {105}{105}}
+\headcommand {\sectionentry {10}{G Land}{106}{G Land}{0}}
+\headcommand {\slideentry {10}{0}{1}{106/106}{}{0}}
+\headcommand {\beamer@framepages {106}{106}}
+\headcommand {\beamer@subsectionpages {106}{106}}
+\headcommand {\beamer@subsectionentry {0}{10}{1}{107}{Coverage Map}}
+\headcommand {\slideentry {10}{1}{1}{107/107}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {107}{107}}
+\headcommand {\beamer@subsectionpages {107}{107}}
+\headcommand {\beamer@subsectionentry {0}{10}{2}{108}{Cropped Maps}}
+\headcommand {\slideentry {10}{2}{1}{108/108}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {108}{108}}
+\headcommand {\beamer@subsectionpages {108}{108}}
+\headcommand {\beamer@subsectionentry {0}{10}{3}{109}{Mask}}
+\headcommand {\slideentry {10}{3}{1}{109/109}{Mask}{0}}
+\headcommand {\beamer@framepages {109}{109}}
+\headcommand {\beamer@subsectionpages {109}{109}}
+\headcommand {\beamer@subsectionentry {0}{10}{4}{110}{Masked}}
+\headcommand {\slideentry {10}{4}{1}{110/110}{Masked}{0}}
+\headcommand {\beamer@framepages {110}{110}}
+\headcommand {\beamer@subsectionpages {110}{110}}
+\headcommand {\beamer@subsectionentry {0}{10}{5}{111}{SR Distribution}}
+\headcommand {\slideentry {10}{5}{1}{111/111}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {111}{111}}
+\headcommand {\beamer@subsectionpages {111}{111}}
+\headcommand {\beamer@subsectionentry {0}{10}{6}{112}{Mean SR}}
+\headcommand {\slideentry {10}{6}{1}{112/112}{Mean SR}{0}}
+\headcommand {\beamer@framepages {112}{112}}
+\headcommand {\beamer@subsectionpages {112}{112}}
+\headcommand {\beamer@subsectionentry {0}{10}{7}{113}{Mean APU}}
+\headcommand {\slideentry {10}{7}{1}{113/113}{Mean APU}{0}}
+\headcommand {\beamer@framepages {113}{113}}
+\headcommand {\beamer@subsectionpages {113}{113}}
+\headcommand {\beamer@subsectionentry {0}{10}{8}{114}{Band APU}}
+\headcommand {\slideentry {10}{8}{1}{114/114}{Band APU}{0}}
+\headcommand {\beamer@framepages {114}{114}}
+\headcommand {\beamer@subsectionpages {114}{114}}
+\headcommand {\beamer@subsectionentry {0}{10}{9}{115}{Errors}}
+\headcommand {\slideentry {10}{9}{1}{115/115}{Errors}{0}}
+\headcommand {\beamer@framepages {115}{115}}
+\headcommand {\beamer@subsectionpages {115}{115}}
+\headcommand {\beamer@subsectionentry {0}{10}{10}{116}{Mean Table}}
+\headcommand {\slideentry {10}{10}{1}{116/116}{Mean Table}{0}}
+\headcommand {\beamer@framepages {116}{116}}
+\headcommand {\beamer@subsectionpages {116}{116}}
+\headcommand {\beamer@subsectionentry {0}{10}{11}{117}{Band Table}}
+\headcommand {\slideentry {10}{11}{1}{117/117}{Band Table}{0}}
+\headcommand {\beamer@framepages {117}{117}}
+\headcommand {\beamer@sectionpages {106}{117}}
+\headcommand {\beamer@subsectionpages {117}{117}}
+\headcommand {\sectionentry {11}{H Land}{118}{H Land}{0}}
+\headcommand {\slideentry {11}{0}{1}{118/118}{}{0}}
+\headcommand {\beamer@framepages {118}{118}}
+\headcommand {\beamer@subsectionpages {118}{118}}
+\headcommand {\beamer@subsectionentry {0}{11}{1}{119}{Coverage Map}}
+\headcommand {\slideentry {11}{1}{1}{119/119}{Coverage Map}{0}}
+\headcommand {\beamer@framepages {119}{119}}
+\headcommand {\beamer@subsectionpages {119}{119}}
+\headcommand {\beamer@subsectionentry {0}{11}{2}{120}{Cropped Maps}}
+\headcommand {\slideentry {11}{2}{1}{120/120}{Cropped Maps}{0}}
+\headcommand {\beamer@framepages {120}{120}}
+\headcommand {\beamer@subsectionpages {120}{120}}
+\headcommand {\beamer@subsectionentry {0}{11}{3}{121}{Mask}}
+\headcommand {\slideentry {11}{3}{1}{121/121}{Mask}{0}}
+\headcommand {\beamer@framepages {121}{121}}
+\headcommand {\beamer@subsectionpages {121}{121}}
+\headcommand {\beamer@subsectionentry {0}{11}{4}{122}{Masked}}
+\headcommand {\slideentry {11}{4}{1}{122/122}{Masked}{0}}
+\headcommand {\beamer@framepages {122}{122}}
+\headcommand {\beamer@subsectionpages {122}{122}}
+\headcommand {\beamer@subsectionentry {0}{11}{5}{123}{SR Distribution}}
+\headcommand {\slideentry {11}{5}{1}{123/123}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {123}{123}}
+\headcommand {\beamer@subsectionpages {123}{123}}
+\headcommand {\beamer@subsectionentry {0}{11}{6}{124}{Mean SR}}
+\headcommand {\slideentry {11}{6}{1}{124/124}{Mean SR}{0}}
+\headcommand {\beamer@framepages {124}{124}}
+\headcommand {\beamer@subsectionpages {124}{124}}
+\headcommand {\beamer@subsectionentry {0}{11}{7}{125}{Mean APU}}
+\headcommand {\slideentry {11}{7}{1}{125/125}{Mean APU}{0}}
+\headcommand {\beamer@framepages {125}{125}}
+\headcommand {\beamer@subsectionpages {125}{125}}
+\headcommand {\beamer@subsectionentry {0}{11}{8}{126}{Band APU}}
+\headcommand {\slideentry {11}{8}{1}{126/126}{Band APU}{0}}
+\headcommand {\beamer@framepages {126}{126}}
+\headcommand {\beamer@subsectionpages {126}{126}}
+\headcommand {\beamer@subsectionentry {0}{11}{9}{127}{Errors}}
+\headcommand {\slideentry {11}{9}{1}{127/127}{Errors}{0}}
+\headcommand {\beamer@framepages {127}{127}}
+\headcommand {\beamer@subsectionpages {127}{127}}
+\headcommand {\beamer@subsectionentry {0}{11}{10}{128}{Mean Table}}
+\headcommand {\slideentry {11}{10}{1}{128/128}{Mean Table}{0}}
+\headcommand {\beamer@framepages {128}{128}}
+\headcommand {\beamer@subsectionpages {128}{128}}
+\headcommand {\beamer@subsectionentry {0}{11}{11}{129}{Band Table}}
+\headcommand {\slideentry {11}{11}{1}{129/129}{Band Table}{0}}
+\headcommand {\beamer@framepages {129}{129}}
+\headcommand {\beamer@sectionpages {118}{129}}
+\headcommand {\beamer@subsectionpages {129}{129}}
+\headcommand {\sectionentry {12}{Cross Validation}{130}{Cross Validation}{0}}
+\headcommand {\slideentry {12}{0}{1}{130/130}{}{0}}
+\headcommand {\beamer@framepages {130}{130}}
+\headcommand {\beamer@subsectionpages {130}{130}}
+\headcommand {\beamer@subsectionentry {0}{12}{1}{131}{SR Distribution}}
+\headcommand {\slideentry {12}{1}{1}{131/131}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {131}{131}}
+\headcommand {\slideentry {12}{1}{2}{132/132}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {132}{132}}
+\headcommand {\slideentry {12}{1}{3}{133/133}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {133}{133}}
+\headcommand {\slideentry {12}{1}{4}{134/134}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {134}{134}}
+\headcommand {\slideentry {12}{1}{5}{135/135}{SR Distribution}{0}}
+\headcommand {\beamer@framepages {135}{135}}
+\headcommand {\beamer@subsectionpages {131}{135}}
+\headcommand {\beamer@subsectionentry {0}{12}{2}{136}{Mean SR}}
+\headcommand {\slideentry {12}{2}{1}{136/136}{Mean SR}{0}}
+\headcommand {\beamer@framepages {136}{136}}
+\headcommand {\slideentry {12}{2}{2}{137/137}{Mean SR}{0}}
+\headcommand {\beamer@framepages {137}{137}}
+\headcommand {\slideentry {12}{2}{3}{138/138}{Mean SR}{0}}
+\headcommand {\beamer@framepages {138}{138}}
+\headcommand {\slideentry {12}{2}{4}{139/139}{Mean SR}{0}}
+\headcommand {\beamer@framepages {139}{139}}
+\headcommand {\slideentry {12}{2}{5}{140/140}{Mean SR}{0}}
+\headcommand {\beamer@framepages {140}{140}}
+\headcommand {\beamer@subsectionpages {136}{140}}
+\headcommand {\beamer@subsectionentry {0}{12}{3}{141}{Mean APU}}
+\headcommand {\slideentry {12}{3}{1}{141/141}{Mean APU}{0}}
+\headcommand {\beamer@framepages {141}{141}}
+\headcommand {\slideentry {12}{3}{2}{142/142}{Mean APU}{0}}
+\headcommand {\beamer@framepages {142}{142}}
+\headcommand {\slideentry {12}{3}{3}{143/143}{Mean APU}{0}}
+\headcommand {\beamer@framepages {143}{143}}
+\headcommand {\slideentry {12}{3}{4}{144/144}{Mean APU}{0}}
+\headcommand {\beamer@framepages {144}{144}}
+\headcommand {\slideentry {12}{3}{5}{145/145}{Mean APU}{0}}
+\headcommand {\beamer@framepages {145}{145}}
+\headcommand {\beamer@subsectionpages {141}{145}}
+\headcommand {\beamer@subsectionentry {0}{12}{4}{146}{Mean Relative APU}}
+\headcommand {\slideentry {12}{4}{1}{146/146}{Mean Relative APU}{0}}
+\headcommand {\beamer@framepages {146}{146}}
+\headcommand {\slideentry {12}{4}{2}{147/147}{Mean Relative APU}{0}}
+\headcommand {\beamer@framepages {147}{147}}
+\headcommand {\slideentry {12}{4}{3}{148/148}{Mean Relative APU}{0}}
+\headcommand {\beamer@framepages {148}{148}}
+\headcommand {\slideentry {12}{4}{4}{149/149}{Mean Relative APU}{0}}
+\headcommand {\beamer@framepages {149}{149}}
+\headcommand {\slideentry {12}{4}{5}{150/150}{Mean Relative APU}{0}}
+\headcommand {\beamer@framepages {150}{150}}
+\headcommand {\beamer@subsectionpages {146}{150}}
+\headcommand {\beamer@subsectionentry {0}{12}{5}{151}{Mean Errors}}
+\headcommand {\slideentry {12}{5}{1}{151/151}{Mean Errors}{0}}
+\headcommand {\beamer@framepages {151}{151}}
+\headcommand {\slideentry {12}{5}{2}{152/152}{Mean Errors}{0}}
+\headcommand {\beamer@framepages {152}{152}}
+\headcommand {\slideentry {12}{5}{3}{153/153}{Mean Errors}{0}}
+\headcommand {\beamer@framepages {153}{153}}
+\headcommand {\slideentry {12}{5}{4}{154/154}{Mean Errors}{0}}
+\headcommand {\beamer@framepages {154}{154}}
+\headcommand {\slideentry {12}{5}{5}{155/155}{Mean Errors}{0}}
+\headcommand {\beamer@framepages {155}{155}}
+\headcommand {\beamer@subsectionpages {151}{155}}
+\headcommand {\beamer@subsectionentry {0}{12}{6}{156}{Sentinel-3 Algorithm Comparison}}
+\headcommand {\slideentry {12}{6}{1}{156/156}{Sentinel-3 Algorithm Comparison}{0}}
+\headcommand {\beamer@framepages {156}{156}}
+\headcommand {\beamer@partpages {1}{156}}
+\headcommand {\beamer@subsectionpages {156}{156}}
+\headcommand {\beamer@sectionpages {130}{156}}
+\headcommand {\beamer@documentpages {156}}
+\headcommand {\gdef \inserttotalframenumber {156}}
