@@ -1,0 +1,373 @@
+---
+title: 'Metadata'
+author: 'Britta Themann'
+date: '25 May 2020'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# SETTINGS (Adjust them!)
+```{r}
+# original for 8 entries
+val.colors <- c('#3283FE','#FEAF16','#009E73','#B00068','darkturquoise','#C4451C','#D85FF7','#90AD1C')
+val.shapes <- c(15,17,18,19,15,17,18,19)
+
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# load packages
+```{r}
+# install.packages('raster')
+# install.packages('ggplot2')
+# install.packages('reshape2')
+# install.packages('gridExtra')
+# install.packages('grid')
+# install.packages('lubridate')
+# install.packages('scales')
+# install.packages('rworldmap')
+# install.packages('rworldxtra')
+# install.packages('ggrepel')
+# install.packages('viridis')
+# install.packages('mapproj')
+library(raster)
+library(ggplot2)
+library(reshape2)
+library(grid)
+library(gridExtra)
+library(lubridate)
+library(scales)
+library(rworldmap)
+library(rworldxtra)
+library(ggrepel)
+library(viridis)
+library(mapproj)
+```
+
+# load data
+```{r}
+input <- read.csv('scripts/input/input.csv')
+```
+
+# extract information
+```{r}
+# make meta dataframe
+meta <- data.frame('Validation.ID'= input$Validation.ID,
+                   'Site'= input$Site,
+                   'Reference.Scene'= input$Reference.Scene,
+                   'Reference.Scene.Path'= input$Reference.Scene.Path,
+                   'Reference.Scene.Filetype'= input$Reference.Scene.Filetype,
+                   'Reference.Scene.Area.km2'= NA,
+                   'Reference.Scene.Resolution'= NA,
+                   'Reference.Sensor'= input$Reference.Sensor,
+                   'Reference.Acq.Date'= ymd(input$Reference.Acq.Date),
+                   'Reference.Acq.Time'= input$Reference.Acq.Time,
+                   'Sentinel.Scene'= input$Sentinel.Scene,
+                   'Sentinel.Scene.Short'= input$Sentinel.Scene.Short,
+                   'Sentinel.Scene.Path'= input$Sentinel.Scene.Path,
+                   'Sentinel.Scene.Filetype'= input$Sentinel.Scene.Filetype,
+                   'Sentinel.Scene.Area.km2'= NA,
+                   'Sentinel.Scene.Resolution'= NA,
+                   'Sentinel'= NA,
+                   'Sentinel.Product'= input$Sentinel.Product,
+                   'Sentinel.Acq.Date'= NA,
+                   'Sentinel.Acq.Time'= NA,
+                   'Longitude' = NA,
+                   'Latitude' = NA,
+                   'Color' = val.colors,
+                   'Shape' = val.shapes)
+
+# fill in missing information
+meta.S2 <- meta[substr(meta$Sentinel.Scene,0,2)=='S2',]
+meta.S3 <- meta[substr(meta$Sentinel.Scene,0,2)=='S3',]
+
+meta.S2$Sentinel.Scene.Resolution <- '10/20/60'
+meta.S2$Sentinel  <- paste0('Sentinel-2', substr(meta.S2$Sentinel.Scene,3,3))
+meta.S2$Sentinel.Acq.Date  <- as.character(ymd(substr(meta.S2$Sentinel.Scene,12,19)))
+meta.S2$Sentinel.Acq.Time  <- paste0(substr(meta.S2$Sentinel.Scene,21,22),':',
+                               substr(meta.S2$Sentinel.Scene,23,24),':',
+                               substr(meta.S2$Sentinel.Scene,25,26))
+
+meta.S3$Sentinel.Scene.Resolution  <- '300'
+meta.S3$Sentinel  <- paste0('Sentinel-3', substr(meta.S3$Sentinel.Scene,3,3))
+meta.S3$Sentinel.Acq.Date  <- as.character(ymd(substr(meta.S3$Sentinel.Scene,17,24)))
+meta.S3$Sentinel.Acq.Time  <- paste0(substr(meta.S3$Sentinel.Scene,26,27),':',
+                               substr(meta.S3$Sentinel.Scene,28,29),':',
+                               substr(meta.S3$Sentinel.Scene,30,31))
+
+meta[substr(meta$Sentinel.Scene,0,2)=='S2',] <- meta.S2
+meta[substr(meta$Sentinel.Scene,0,2)=='S3',] <- meta.S3
+
+for (i in 1:nrow(meta)){ # rows are the same as input
+  # i=1
+  m <- meta[i,]
+  
+  # get Sentinel path
+  if(substr(m$Sentinel.Scene,0,2)=='S2'){
+    sen.dir <- paste0(m$Sentinel.Scene.Path,'R60m/',m$Sentinel.Scene.Short,'_B01_60m.jp2')
+  }
+  if(substr(m$Sentinel.Scene,0,2)=='S3'){
+    sen.dir <- paste0(m$Sentinel.Scene.Path,m$Sentinel.Scene.Short,'.tif')
+  }
+  
+  # load files
+  ref <- brick(paste0(m$Reference.Scene.Path,m$Reference.Scene,'.bsq'))
+  ref <- ref[[1]]
+  sen <- raster(sen.dir)
+  sen <- sen[[1]]
+  
+  # extract coordinates
+  # library(rgdal)
+  ref.proj <- projectRaster(ref, crs = CRS('+proj=longlat +datum=WGS84'))
+  coords <- c(xmax(ref.proj)+xmin(ref.proj), ymax(ref.proj)+ymin(ref.proj))/2
+  m$Longitude <- coords[1]
+  m$Latitude <- coords[2]
+  
+  # extract resolution
+  ref.res <- round(res(ref)[1], digits = 1)
+  m$Reference.Scene.Resolution <- ref.res
+  
+  # extract number of pixels not NA
+  ref.obs.df <- as.data.frame(ref, na.rm=TRUE)
+  ref.obs <- length(ref.obs.df[ref.obs.df > 0])
+  
+  # extract area
+  ref.area <- ref.res^2*ref.obs/1000000
+  m$Reference.Scene.Area.km2 <- ref.area
+  sen.outline <- as(extent(sen), 'SpatialPolygons')
+  sen.area <- rgeos::gArea(sen.outline)/1000000
+  m$Sentinel.Scene.Area.km2 <- sen.area
+  
+  # write resolution and area into meta data frame
+  meta[i,]<-  m
+}
+```
+
+# acquisition evaluation data
+```{r}
+# formatting data and time
+ref.acq.datetime <- ymd_hms(paste0(meta$Reference.Acq.Date,meta$Reference.Acq.Time), tz='CET')
+sen.acq.datetime <- ymd_hms(paste0(meta$Sentinel.Acq.Date,meta$Sentinel.Acq.Time), tz='CET')
+ref.acq.date <- ymd(meta$Reference.Acq.Date, tz='CET')
+sen.acq.date <- ymd(meta$Sentinel.Acq.Date, tz='CET')
+ref.acq.time <- ymd_hms(paste0('0000-01-01' ,meta$Reference.Acq.Time), tz='CET')
+sen.acq.time <- ymd_hms(paste0('0000-01-01 ',meta$Sentinel.Acq.Time), tz='CET')
+
+# get (only) time difference of the hours (time zone cannot be directly supplied to hm function)
+diff.time <- sen.acq.time - ref.acq.time
+diff.date <- as.double(sen.acq.date - ref.acq.date, units = 'days')
+
+
+# prepare plot data
+  # acquisition overview
+acq <- data.frame('Val.ID'=meta$Validation.ID,
+                    'Sen.Acq.DateTime'=sen.acq.datetime,'Ref.Acq.DateTime'=ref.acq.datetime)
+acq2 <- data.frame('Val.ID'=meta$Validation.ID,
+                    'Sen.Acq.DateTime'=sen.acq.time,'Ref.Acq.DateTime'=ref.acq.time)
+acq <- melt(acq, id.vars = 'Val.ID')
+acq2 <- melt(acq2, id.vars = 'Val.ID')
+colnames(acq)[2]<- 'Scene'
+colnames(acq)[3]<- 'Date'
+acq$Time <- acq2$value
+rm(acq2)
+acq$ErrorMin <- acq$Time-minutes(30)
+acq$ErrorMax <- acq$Time+minutes(30)
+acq[acq$Scene %in% 'Ref.Acq.DateTime','ErrorMin'] <- acq[acq$Scene %in% 'Ref.Acq.DateTime','Time']
+acq[acq$Scene %in% 'Ref.Acq.DateTime','ErrorMax'] <- acq[acq$Scene %in% 'Ref.Acq.DateTime','Time']
+
+  # datetime difference
+acq.diff <- data.frame('Val.ID'=meta$Validation.ID, 
+                   'Sen.Acq.Date'=sen.acq.date,'Ref.Acq.Date'=ref.acq.date,
+                   'Sen.Acq.Time'=sen.acq.time,'Ref.Acq.Time'=ref.acq.time,
+                   'Diff.Date'=diff.date,'Diff.Time'=diff.time)
+acq.diff$Diff.Time <- acq.diff$Diff.Time
+```
+
+# acquisition evaluation plots
+```{r}
+# acquisition plot
+acq.plot <- ggplot(acq, aes(x=Date,y=Time, color=Val.ID, shape= Val.ID))+
+  geom_vline(xintercept = c(ymd_hms('2018-07-01 00:00:00', tz='CET'),ymd_hms('2018-08-01 00:00:00', tz='CET')),
+             size=0.5, color='gray45')+
+  geom_point(aes(size=Scene), alpha = 0.7)+
+  geom_errorbar(aes(ymin = ErrorMin, ymax = ErrorMax), width = 0.2, linetype='longdash', alpha = 0.7)+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        legend.title = element_text(face='bold')
+        )+
+  labs(title = 'Scene Acquisition',
+       x = '2018', y='Time',
+       color='Validation ID',shape='Validation ID',
+       size=element_blank())+
+  scale_x_datetime(breaks = seq(min(acq$Date)-days(1),max(acq$Date)+days(1), '1 days'),
+                   labels = date_format('%d\n%b'))+
+  scale_shape_manual(values=val.shapes)+
+  scale_color_manual(values=val.colors)+
+  scale_size_manual(values=c(5,3), labels=c('Sentinel','Reference'))
+acq.plot
+
+# datetime difference plot
+acq.diff.plot <- ggplot(acq.diff, aes(x=Diff.Date,y=Diff.Time, color=Val.ID, shape= Val.ID))+
+  geom_rect(aes(xmin=-Inf,xmax=Inf,ymin=-30,ymax=30),color=NA,alpha=0.1,fill='lightgray')+
+  geom_point(size=3)+
+  geom_vline(xintercept = 0, size=0.5, color='gray45')+
+  geom_hline(yintercept = 0, size=0.5, color='gray45')+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        plot.subtitle = element_text(size=12, face='bold', hjust=0.5),
+        legend.title = element_text(face='bold'))+
+  labs(title = 'Scene Acquisition Difference',
+       subtitle = 'Sentinel Scene - Reference Scene',
+       x = 'Date Difference [d]', y='Time Difference [min]',
+       color='Validation ID',shape='Validation ID'
+       )+
+  scale_x_continuous(limits = c(-3,3), breaks = c(seq(-3,3,1)))+
+  scale_y_continuous(limits = c(-240,240),breaks = c(seq(-240,240,30)))+
+  scale_shape_manual(values=val.shapes)+
+  scale_color_manual(values=val.colors)
+acq.diff.plot
+```
+
+# pixel evaluation data
+```{r}
+pix <- subset(meta, select=c('Validation.ID','Reference.Scene.Resolution',
+                             'Sentinel.Scene.Resolution','Sentinel'))
+
+# Sentinel-2
+pix.S2 <- pix[pix$Sentinel == 'Sentinel-2A'|pix$Sentinel == 'Sentinel-2B',]
+pix.S2$Sentinel.Scene.Resolution <- NULL
+pix.S2$Sentinel.Scene.Resolution.10 <- 10
+pix.S2$Sentinel.Scene.Resolution.20 <- 20
+pix.S2$Sentinel.Scene.Resolution.60 <- 60
+pix.S2$Reference.Scene.Resolution <- as.numeric(pix.S2$Reference.Scene.Resolution)
+pix.S2 <- melt(pix.S2, id.vars = c('Validation.ID','Sentinel'))
+pix.S2 <- pix.S2[order(-pix.S2$value),] # Reference pixel on top of Sentinel pixel
+
+# Sentinel-3
+pix.S3 <- pix[pix$Sentinel == 'Sentinel-3A'|pix$Sentinel == 'Sentinel-3B',]
+pix.S3$Reference.Scene.Resolution <- as.numeric(pix.S3$Reference.Scene.Resolution)
+pix.S3$Sentinel.Scene.Resolution <- as.numeric(pix.S3$Sentinel.Scene.Resolution)
+pix.S3 <- melt(pix.S3, id.vars = c('Validation.ID','Sentinel'))
+pix.S3 <- pix.S3[order(-pix.S3$value),] # Reference pixel on top of Sentinel pixel
+```
+
+# pixel evaluation plots
+```{r}
+# Sentinel-2
+pix.S2.plot <- ggplot(data = pix.S2) +
+  facet_wrap(~Validation.ID)+
+  geom_rect(aes(xmin = 0, ymin = 0, xmax = value, ymax = value, fill= variable))+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        plot.subtitle = element_text(size=12, face='bold', hjust=0.5),
+        legend.title = element_blank(),
+        strip.text.x = element_text(face='bold'))+
+  labs(title = 'Pixel Size Difference',
+       x = 'Spatial Resolution [m]', y='Spatial Resolution [m]')+
+  scale_fill_manual(values = c('darkgreen','red','firebrick','darkred'), 
+                    labels=c('Reference','Sentinel-2 B2-B3-B4-B8',
+                                                            'Sentinel-2 B5-B6-B7-B8A-B11-B12',
+                                                            'Sentinel-2 B1-B9'))
+pix.S2.plot
+
+# Sentinel-3
+pix.S3.plot <- ggplot(data = pix.S3) +
+  facet_wrap(~Validation.ID)+
+  geom_rect(aes(xmin = 0, ymin = 0, xmax = value, ymax = value, fill= variable))+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        plot.subtitle = element_text(size=12, face='bold', hjust=0.5),
+        legend.title = element_blank(),
+        strip.text.x = element_text(face='bold'))+
+  labs(title = 'Pixel Size Difference',
+       x = 'Spatial Resolution [m]', y='Spatial Resolution [m]')+
+  scale_fill_manual(values = c('darkgreen','red','firebrick','darkred'), 
+                    labels=c('Reference','Sentinel-3'))
+pix.S3.plot
+```
+
+# map data
+```{r}
+# create data frames
+map.valid <- data.frame('long' = meta$Longitude,'lat' = meta$Latitude,'Validation.ID' = meta$Validation.ID)
+map.site <- unique(data.frame('long' = meta$Longitude,'lat' = meta$Latitude, 'Site'= meta$Site))
+
+# manually deleting one 'Spain Majadas' otherwise they would appear as 2 sites <- TRY TO DO THAT THROUGH SETTING THE LINE ABOVE TO ONLY UNIQUE SITES, but coordinates slightly different
+map.site <- map.site[-4,]
+
+# get the world map
+worldMap <- getMap(resolution='high')
+
+# ATTEMPT TO FIND MEDITERRANEAN ISLANDS
+# worldMap.df <- data.frame(worldMap)
+# which(worldMap.df == 'Corsica', arr.ind = TRUE)
+
+# geographic Europe subset (a bit larger to include fringe countries in map)
+europeMap <- worldMap[worldMap$LON > -15 & worldMap$LON < 20 
+                      & worldMap$LAT > 25 & worldMap$LAT < 55,]
+
+# get list of relevant countries
+countries.df <- data.frame(europeMap)
+countries <- countries.df$NAME
+
+# select only the index of relevant countries
+countries.i <- which(worldMap$NAME%in%countries)
+
+# extract longitude and latitude border's coordinates of relevant countries
+europeCoords <- lapply(countries.i, function(i){
+  df <- data.frame(worldMap@polygons[[i]]@Polygons[[1]]@coords)
+  df$region =as.character(worldMap$NAME[i])
+  colnames(df) <- list('long', 'lat', 'region')
+  return(df)
+})
+
+europeCoords <- do.call('rbind', europeCoords)
+```
+
+# map plot
+```{r}
+map <- ggplot() + 
+  geom_polygon(data = europeCoords, aes(x = long, y = lat, group = region, fill= region),
+               colour = 'black', size = 0.1, show.legend = FALSE) +
+  geom_point(data = map.site, aes(x = long, y = lat), 
+             color = 'black', fill= 'white', size = 6, shape = 21) +
+  geom_label_repel(data = map.site, aes(x = long, y = lat, label=Site),
+                  box.padding   = 0.35, point.padding = 0.5,
+                  segment.color = 'black',fontface = 'bold') +
+  geom_point(data = map.valid, aes(x = long, y = lat, color = Validation.ID, shape = Validation.ID),
+             size = 3, alpha = 0.7) +
+  coord_map(xlim = c(-10, 17),  ylim = c(35, 50))+ 
+  labs(title = 'Reference Data (FLEX Campaigns 2018)',
+       x = 'Longitude [°E]', y = 'Latitude [°N]',
+       color = 'Validation ID', shape  = 'Validation ID')+
+  theme(plot.title = element_text(hjust = 0.5, face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.title = element_text(hjust = 0.5, face = 'plain'),
+        panel.grid.major = element_line(colour = 'lightgrey'),
+        panel.background = element_rect(fill = 'aliceblue', colour = 'black'))+
+  scale_fill_manual(values = viridis(34))+
+  scale_color_manual(values = val.colors)+
+  scale_shape_manual(values = val.shapes)
+map
+```
+
+# write to disc
+```{r}
+# meta table
+write.csv(meta, 'Metadata.csv', row.names = FALSE)
+
+# acquisition plots
+ggsave(file='Scene_Acquisition.png',plot=acq.plot,width=15, height=6, dpi = 300)
+ggsave(file='Scene_Acquisition_Difference.png',plot=acq.diff.plot,width=12, height=6, dpi = 300)
+
+# pixel plots
+ggsave(file='Scene_Resolution_S2.png',plot=pix.S2.plot,width=11, height=6, dpi = 300)
+ggsave(file='Scene_Resolution_S3.png',plot=pix.S3.plot,width=11, height=6, dpi = 300)
+
+# map
+ggsave(file='Reference_Data_Map.png',plot=map,width=10, height=6, dpi = 300)
+```
+
+```{r}
+```

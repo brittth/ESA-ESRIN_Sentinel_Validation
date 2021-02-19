@@ -1,0 +1,435 @@
+---
+title: 'Spatial Resampling'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# SETTINGS (Adjust them!)
+```{r}
+# val.id <- 'A'
+# val.id <- 'B'
+# val.id <- 'C'
+# val.id <- 'D'
+# val.id <- 'E'
+# val.id <- 'F'
+# val.id <- 'G'
+# val.id <- 'H'
+
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# load packages
+```{r}
+# install.packages('raster')
+# install.packages('rgdal')
+# install.packages('gdalUtils')
+# install.packages('stringr')
+# install.packages('ggplot2')
+# install.packages('grid')
+# install.packages('gridExtra')
+# install.packages('RStoolbox')
+library(raster)
+library(rgdal)
+library(gdalUtils)
+library(stringr)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(RStoolbox)
+```
+
+# load data
+```{r}
+# load meta data
+meta <- read.csv('Metadata.csv')
+
+# subset meta to relevant dataset by Validation ID
+meta <- meta[meta$Validation.ID %in% val.id,]
+
+# adjust val.ids
+val.id.file <- chartr(' ', '_', val.id)
+val.ids <- c(paste0(val.id.file,'_Land'),paste0(val.id.file,'_Water'))
+
+# load reference data
+  # val.id not important here as reference and sentinel imagery is identical for both validation ids
+file <- list.files(path = val.ids[1], pattern = 'specres')
+H <- brick(paste0(val.ids[1],'/',file))
+
+# Sentinel-2
+if(meta$Sentinel == 'Sentinel-2A'|meta$Sentinel == 'Sentinel-2B'){
+  
+  # load Sentinel-2 data
+  S10 <- brick(raster(paste0(meta$Sentinel.Scene.Path,'R10m/',meta$Sentinel.Scene.Short,'_B02_10m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R10m/',meta$Sentinel.Scene.Short,'_B03_10m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R10m/',meta$Sentinel.Scene.Short,'_B04_10m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R10m/',meta$Sentinel.Scene.Short,'_B08_10m.jp2')))
+  S20 <- brick(raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B05_20m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B06_20m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B07_20m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B8A_20m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B11_20m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R20m/',meta$Sentinel.Scene.Short,'_B12_20m.jp2')))
+  S60 <- brick(raster(paste0(meta$Sentinel.Scene.Path,'R60m/',meta$Sentinel.Scene.Short,'_B01_60m.jp2')),
+               raster(paste0(meta$Sentinel.Scene.Path,'R60m/',meta$Sentinel.Scene.Short,'_B09_60m.jp2')))
+
+  # Sentinel-3  
+}else{
+  
+  # load Sentinel-3 data
+  S300 <- brick(paste0(meta$Sentinel.Scene.Path,meta$Sentinel.Scene.Short,meta$Sentinel.Scene.Filetype))
+  
+}
+```
+
+# prepare data
+```{r}
+# Sentinel-2
+if(meta$Sentinel == 'Sentinel-2A'|meta$Sentinel == 'Sentinel-2B'){
+  
+  # drop excluded Sentinel-2 bands
+  H <- dropLayer(H, c(11)) # Band10 at the 11th position due to Band8A
+  
+  # Sentinel-2 band names
+  names(H) <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band8A','Band9','Band11','Band12')
+  
+  # separate reference data into different resolution bands
+  H10 <- brick(subset(H, c('Band2','Band3','Band4','Band8'), drop=TRUE))
+  H20 <- brick(subset(H, c('Band5','Band6','Band7','Band8A','Band11','Band12'), drop=TRUE))
+  H60 <- brick(subset(H, c('Band1','Band9'), drop=TRUE))
+  
+  # for RGB maps (before cropping)
+  S <- S10
+  
+  # crop Sentinel-2 data and scl
+  S10 <- crop(S10,extent(H), snap='in')
+  S20 <- crop(S20,extent(H), snap='in')
+  S60 <- crop(S60,extent(H), snap='in')
+
+# Sentinel-3    
+}else{
+  
+  # drop excluded Sentinel-3 bands
+  H <- dropLayer(H, c(13,14,15,19,20)) # Band13, Band14, Band15, Band19, Band20
+  
+  # Sentinel-3 band names
+  names(H) <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band9','Band10','Band11','Band12',
+                'Band16','Band17','Band18','Band21')
+  
+  # drop excluded Sentinel-3 bands
+  S300 <- dropLayer(S300, c(nlayers(S300)-1,nlayers(S300))) # drop latitude and longitude layer from SNAP reprojection step
+  
+  # SYNERGY product specific (flag layers are still included, important for masking)
+  if(grepl('SYN', meta$Sentinel.Scene)){S300 <- dropLayer(S300, c(17,18,19,20,21))} # drop flag layers
+  
+  # for RGB maps (before cropping)
+  S <- S300
+  
+  # crop Sentinel-3 data and flag layer
+  S300 <- crop(S300,extent(H), snap='in')
+
+  # convert negative values to NAs
+  S300[S300 < 0] <- NA
+
+}
+```
+
+# spatial resampling of reference data
+```{r}
+file <- str_sub(file,0,-5)
+# i=1
+for(i in 1:length(val.ids)){
+  # tryCatch({
+  
+    # Sentinel-2
+    if(meta$Sentinel == 'Sentinel-2A'|meta$Sentinel == 'Sentinel-2B'){
+    
+      # write cropped Sentinel-2 data to disc as reference
+      writeRaster(S10, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres10.tif'),overwrite=TRUE)
+      writeRaster(S20, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres20.tif'),overwrite=TRUE)
+      writeRaster(S60, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres60.tif'),overwrite=TRUE)
+        
+      # write reference data to disc for resampling
+      writeRaster(H10, paste0(val.ids[i],'/',file,'_10.tif'),overwrite=TRUE)
+      writeRaster(H20, paste0(val.ids[i],'/',file,'_20.tif'),overwrite=TRUE)
+      writeRaster(H60, paste0(val.ids[i],'/',file,'_60.tif'),overwrite=TRUE)
+      
+      # spatial resampling (AVERAGE)
+      H10 <- align_rasters(unaligned = paste0(val.ids[i],'/',file,'_10.tif'),
+                           reference = paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres10.tif'),
+                           dstfile = paste0(val.ids[i],'/',file,'_spatres10.tif'),
+                           r='average', output_Raster = TRUE, nThreads = 1, projres_only = FALSE, verbose = FALSE)
+      H20 <- align_rasters(unaligned = paste0(val.ids[i],'/',file,'_20.tif'),
+                           reference = paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres20.tif'),
+                           dstfile = paste0(val.ids[i],'/',file,'_spatres20.tif'),
+                           r='average', output_Raster = TRUE, nThreads = 1, projres_only = FALSE, verbose = FALSE)
+      H60 <- align_rasters(unaligned = paste0(val.ids[i],'/',file,'_60.tif'),
+                           reference = paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres60.tif'),
+                           dstfile = paste0(val.ids[i],'/',file,'_spatres60.tif'),
+                           r='average', output_Raster = TRUE, nThreads = 1, projres_only = FALSE, verbose = FALSE)
+
+      # get AOI outline from reference data
+        # make all values the same
+      H10.for.outline <- H10[[1]] > -Inf
+      H20.for.outline <- H20[[1]] > -Inf
+      H60.for.outline <- H10[[1]] > -Inf
+        # convert raster to polygon
+      H10.outline <- rasterToPolygons(H10.for.outline, dissolve=TRUE)
+      H20.outline <- rasterToPolygons(H20.for.outline, dissolve=TRUE)
+      H60.outline <- rasterToPolygons(H60.for.outline, dissolve=TRUE)
+      
+      # crop sentinel data to resampled reference image outline
+      S10 <- mask(S10, H10.outline)
+      S20 <- mask(S20, H20.outline)
+      S60 <- mask(S60, H60.outline)
+
+      # overwrite cropped and spatially resampled Sentinel-2 data
+      writeRaster(S10, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres10.tif'),overwrite=TRUE)
+      writeRaster(S20, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres20.tif'),overwrite=TRUE)
+      writeRaster(S60, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres60.tif'),overwrite=TRUE)
+      
+    # Sentinel-3  
+    }else{ 
+      
+      # write cropped Sentinel-3 data to disc as reference
+      writeRaster(S300, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres300.tif'),overwrite=TRUE)
+      
+      # write hyperspectral data to disc for resampling
+      writeRaster(H, paste0(val.ids[i],'/',file,'_300.tif'),overwrite=TRUE)
+      
+      # spatial resampling (AVERAGE)
+      H300 <- align_rasters(unaligned = paste0(val.ids[i],'/',file,'_300.tif'),
+                           reference = paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres300.tif'),
+                           dstfile = paste0(val.ids[i],'/',file,'_spatres300.tif'),
+                           r='average', output_Raster = TRUE, nThreads = 1, projres_only = FALSE, verbose = FALSE)
+      
+      # get AOI outline from reference data
+        # make all values the same
+      H300.for.outline <- H300[[1]] > -Inf
+        # convert raster to polygon
+      H300.outline <- rasterToPolygons(H300.for.outline, dissolve=TRUE)
+      
+      # crop sentinel data and scl to resampled reference image outline
+      S300 <- mask(S300, H300.outline)
+      
+      # overwrite cropped and spatially resampled Sentinel-2 data
+      writeRaster(S300, paste0(val.ids[i],'/',meta$Sentinel.Scene.Short,'_spatres300.tif'),overwrite=TRUE)
+      
+    } 
+  #})   
+}
+```
+
+# prepare maps data
+```{r}
+# TCI/coverage maps
+  # project rasters for map outlines
+S.proj <- projectRaster(S[[1]], crs = CRS('+proj=longlat +datum=WGS84'))
+H.proj <- projectRaster(H[[1]], crs = CRS('+proj=longlat +datum=WGS84'))
+
+  # get raster outlines
+S.outline <- as(extent(S[[1]]), 'SpatialPolygons') #for area
+H.outline <- as(extent(H[[1]]), 'SpatialPolygons') #for area
+S.proj.outline <- as(extent(S.proj), 'SpatialPolygons')
+H.proj.outline <- as(extent(H.proj), 'SpatialPolygons')
+
+  # dimensions [km] and areas [km2]
+S.xdim <- round(dim(S)[1]*res(S)[1]/1000,digits=3)
+S.ydim <- round(dim(S)[2]*res(S)[2]/1000,digits=3)
+H.xdim <- round(dim(H)[1]*res(H)[1]/1000,digits=3)
+H.ydim <- round(dim(H)[2]*res(H)[2]/1000,digits=3)
+S.area <- round(rgeos::gArea(S.outline)/1000000,digits=3)
+H.area <- round(rgeos::gArea(H.outline)/1000000,digits=3)
+
+  # annotation position for coverage plot
+mean.x <- sum(xmin(S.proj),((xmax(S.proj)-xmin(S.proj))/2))
+mean.y <- sum(ymin(S.proj),((ymax(S.proj)-ymin(S.proj))/2))
+x.offset <- (xmax(S.proj)-xmin(S.proj))/16
+y.offset <- (ymax(S.proj)-ymin(S.proj))/16
+
+  # plot arrangement
+if(meta$Sentinel == 'Sentinel-2A' |meta$Sentinel == 'Sentinel-2B'){
+  S.nbands <-'12 (of 13, Band10 excluded)'
+}else{
+  S.nbands <-'16 (of 21, Band13/14/15/19/20 excluded)'
+}
+if(meta$Reference.Sensor == 'HyPlant'){
+  H.nbands <- 626
+}else{
+  H.nbands <- 285
+}
+title <- textGrob(val.id,gp = gpar(fontsize=14, fontface ='bold'))
+meta.df <- data.frame('S'=c(as.character(meta$Sentinel),
+                            paste('Acquisition:',meta$Sentinel.Acq.Date,',',meta$Sentinel.Acq.Time),
+                            paste('File:',meta$Sentinel.Scene),
+                            paste('Product:',meta$Sentinel.Product),paste('Bands:',S.nbands),paste('Spatial Resolution:',meta$Sentinel.Scene.Resolution,'m')),
+                      'C'=c('          ','          ','          ','          ','          ','          '),
+                      'H'=c(paste(meta$Site, '(FLEX Campaign)'),
+                            paste('Acquisition:',meta$Reference.Acq.Date,',',meta$Reference.Acq.Time),
+                            paste('File:',meta$Reference.Scene),
+                            paste('Sensor:',meta$Reference.Sensor),paste('Bands:',H.nbands),paste('Spatial Resolution:',meta$Reference.Scene.Resolution,'m')))
+col.matrix <- matrix('red', nrow(meta.df), ncol(meta.df))
+col.matrix[,2] <- 'white'
+col.matrix[,3] <- 'darkgreen'
+meta.table <- tableGrob(meta.df, 
+                        theme = ttheme_minimal(core = list(fg_params=list(hjust =0, x=0,fontsize=10,col=col.matrix))),
+                        cols=NULL,rows=NULL)
+lay <- rbind(c(1,2,3),
+             c(4,4,4))
+
+# cropped/spatres maps
+  # titles
+title.sen.G <- textGrob('Sentinel Scene',gp = gpar(fontsize=12, fontface ='bold',hjust = 0.5))
+title.ref.G <- textGrob('Reference Scene',gp = gpar(fontsize=12, fontface ='bold',hjust = 0.5))
+
+# TCI colors
+  # Sentinel-2
+if(meta$Sentinel == 'Sentinel-2A' |meta$Sentinel == 'Sentinel-2B'){
+  # Band number in S10 dataset
+  red <- 3 
+  green <- 2
+  blue <- 1
+  red.H <- 4 
+  green.H <- 3
+  blue.H <- 2
+  # Sentinel-3
+}else{
+  red <- 8 
+  green <- 6
+  blue <- 4
+  red.H <- 8 
+  green.H <- 4
+  blue.H <- 6
+}
+```
+
+# create TCI/coverage maps
+```{r}
+# TCI plots
+  # Sentinel
+S.TCI.plot <- ggRGB(S,r=red, g=green, b=blue, stretch='hist') +
+  theme_void()+
+  theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))+
+  labs(title = 'Sentinel Scene')+
+  geom_path(aes(x = long, y = lat), data = S.outline, size=1, col='red')
+  
+  # Reference
+H.TCI.plot <- ggRGB(H,r=red.H, g=green.H, b=blue.H, stretch='hist', maxpixels = ncell(H))+
+  theme_void()+
+  theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))+
+  labs(title = 'Reference Scene')+
+  geom_path(aes(x = long, y = lat), data = H.outline, size=1, col='darkgreen')
+
+# coverage
+coverage.plot <- ggplot()+
+  theme_light()+
+  theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))+
+  labs(title = 'Coverage',x = 'Longitude [°]', y = 'Latitude [°]')+
+  geom_path(aes(x = long, y = lat), data = S.proj.outline,size=1, col='red')+
+  annotate('text',col='red', label = paste(S.area,'km2'),x = mean.x,y = mean.y, fontface ='bold')+
+  annotate('text',col='red', label = paste(S.xdim,'km'),x = mean.x,y = ymin(S.proj)+y.offset)+
+  annotate('text',col='red', label = paste(S.ydim,'km'),x = xmin(S.proj)+x.offset,y = mean.y,angle = 90)+
+  geom_path(aes(x = long, y = lat), data = H.proj.outline,size=1, col='darkgreen')+
+  annotate('text', col='darkgreen', label = paste(H.area,'km2'),x = mean.x, y = mean.y-y.offset, fontface ='bold')+
+  annotate('text',col='darkgreen', label = paste(H.xdim,'km'),x = mean.x,y = ymax(S.proj)-y.offset)+
+  annotate('text',col='darkgreen', label = paste(H.ydim,'km'),x = xmax(S.proj)-x.offset,y = mean.y,angle = 90)
+
+
+# arrange plots
+TCI.coverage.plot <- grid.arrange(S.TCI.plot,coverage.plot,H.TCI.plot,
+                                  meta.table,layout_matrix = lay,
+                                  ncol=3, nrow=2, heights=c(5,2),top = title)
+TCI.coverage.plot
+```
+
+# create cropped and spatially resampled maps
+```{r}
+# Sentinel-2
+if(meta$Sentinel == 'Sentinel-2A'|meta$Sentinel == 'Sentinel-2B'){
+  
+  # 10m
+  S10.cropped.plot <- ggRGB(S10,r=3, g=2, b=1, stretch='hist')+ theme_void()
+  H10.cropped.plot <- ggRGB(H10,r=3, g=2, b=1, stretch='hist')+ theme_void()
+  
+  # 20m
+  S20.cropped.plot <- ggRGB(S20,r=1, g=2, b=3, stretch='hist')+ theme_void()
+  H20.cropped.plot <- ggRGB(H20,r=1, g=2, b=3, stretch='hist')+ theme_void()
+  
+  # 60 m
+  S60.cropped.plot <- ggRGB(S60,r=1, g=2, b=2, stretch='hist')+ theme_void()
+  H60.cropped.plot <- ggRGB(H60,r=1, g=2, b=2, stretch='hist')+ theme_void()
+  
+  # titles and resolution labels
+  bands10 <- textGrob('10 m\nBand2 - Band3 - Band4 - Band8',gp = gpar(fontsize=10, fontface ='bold'))
+  bands20 <- textGrob('20 m\nBand5 - Band6 - Band7 - Band8A - Band11 - Band12',gp = gpar(fontsize=10, fontface ='bold'))
+  bands60 <- textGrob('60 m\nBand1 - Band9',gp = gpar(fontsize=10, fontface ='bold'))
+  
+  # plot arrangement
+  cropped.plot <- grid.arrange(title.sen.G,rectGrob(gp=gpar(col=NA)),title.ref.G,
+                               S10.cropped.plot,bands10,H10.cropped.plot,
+                               S20.cropped.plot,bands20,H20.cropped.plot,
+                               S60.cropped.plot,bands60,H60.cropped.plot,
+                               ncol=3,nrow=4, heights=c(0.4,10,10,10),top=title)
+  
+  # Greifensee specific vertical arrangement
+  if(val.id == 'A'){
+    S10.cropped.plot.G <- ggRGB(S10,r=3, g=2, b=1, stretch='hist')+ theme_void()
+    H10.cropped.plot.G <- ggRGB(H10,r=3, g=2, b=1, stretch='hist')+ theme_void()
+    bands.G <- textGrob('10 m (left)\nBand2 - Band3 - Band4 - Band8\n\n20 m (center)\nBand5 - Band6 - Band7 - Band8A - Band11 - Band12\n\n60 m (right)\nBand1 - Band9',gp = gpar(fontsize=10, fontface ='bold'))
+    lay.G <- rbind(c(1,1,1,2,3,3,3),
+                   c(4,5,6,7,8,9,10))
+    cropped.plot <- grid.arrange(title.sen.G,rectGrob(gp=gpar(col=NA)),title.ref.G,
+                                 S10.cropped.plot.G,S20.cropped.plot,S60.cropped.plot,
+                                 bands.G,
+                                 H10.cropped.plot.G,H20.cropped.plot,H60.cropped.plot,
+                                 layout_matrix = lay.G,ncol=7,nrow=2, top=title,
+                                 heights=c(0.2,10), widths=c(1,1,1,3.5,1,1,1))
+  }
+
+  
+# Sentinel-3
+}else{
+  
+  # 300m
+  S300.cropped.plot <- ggRGB(S300,r=8, g=6, b=4, stretch='hist')+ theme_void()
+  H300.cropped.plot <- ggRGB(H300,r=8, g=6, b=4, stretch='hist')+ theme_void()
+  
+  # titles and resolution labels
+  bands300 <- textGrob('300 m\nBand1-12 & Band16-18 & Band21',gp = gpar(fontsize=10, fontface ='bold'))
+  
+  # plot arrangement
+  cropped.plot <- grid.arrange(title.sen.G,rectGrob(gp=gpar(col=NA)),title.ref.G,
+                               S300.cropped.plot,bands300,H300.cropped.plot,
+                               ncol=3,nrow=2, heights=c(0.4,4), widths=c(1,1,1),top=title)
+}
+```
+
+# write plots to disc
+```{r}
+# i=1
+for(i in 1:length(val.ids)){
+
+    # TCI maps
+    ggsave(file=paste0(val.ids[i],'/',val.ids[i],'_TCI_coverage_maps.png'),plot=TCI.coverage.plot, 
+           width=15, height=6, dpi = 300)
+    
+    # write cropped and spatially resampled maps
+      # Sentinel-2
+    if(meta$Sentinel == 'Sentinel-2A'|meta$Sentinel == 'Sentinel-2B'){
+      ggsave(file=paste0(val.ids[i],'/',val.ids[i],'_cropped_maps.png'),plot=cropped.plot, 
+             width=10, height=6, dpi = 300)
+      
+      # Sentinel-3
+    }else{
+      ggsave(file=paste0(val.ids[i],'/',val.ids[i],'_cropped_maps.png'),plot=cropped.plot, 
+             width=10, height=2.5, dpi = 300)
+    }
+      
+}
+```
+
+
+
+```{r}
+```

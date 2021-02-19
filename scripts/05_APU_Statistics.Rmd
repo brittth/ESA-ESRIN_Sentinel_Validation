@@ -1,0 +1,827 @@
+---
+title: 'APU Statistics'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# SETUP
+## settings (ADJUST THEM!)
+```{r}
+# val.id <- 'A Land'
+# val.id <- 'A Water'
+# val.id <- 'B Land'
+# val.id <- 'C Land'
+# val.id <- 'D Land'
+# val.id <- 'E Land'
+# val.id <- 'F Land'
+# val.id <- 'G Land'
+val.id <- 'H Land'
+
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+## load packages
+```{r}
+# install.packages('stringr')
+# install.packages('reshape')
+# install.packages('ggplot2')
+# install.packages('scales')
+# install.packages('gridExtra')
+# install.packages('grid')
+library(stringr)
+library(reshape)
+library(ggplot2)
+library(scales)#label=percent
+library(gridExtra)
+library(grid)
+```
+
+
+## DATA
+# load data and common plot elements
+```{r}
+# get val.id name for inputs and outputs
+val.id.file <- chartr(' ', '_', val.id)
+
+# set working directory to specific validation
+setwd(val.id.file)
+
+# load data
+file <- paste0(val.id.file,'_comparison_data.csv')
+data <- read.csv(paste0(file) , sep=',', dec='.')
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  all.bandnames <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band8A','Band9','Band11','Band12')
+}else{ #Sentinel-3
+  all.bandnames <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band9','Band10','Band11','Band12',
+                     'Band16','Band17','Band18','Band21')
+}
+data$Band <- factor(data$Band,levels = all.bandnames )
+
+# load names for legends and titles
+site <- as.character(data$Site[1])
+ref.scene <- as.character(data$Reference.Scene[1])
+ref.sensor <- as.character(data$Reference.Sensor[1])
+ref.date <- as.character(data$Reference.Acq.Date[1])
+ref.time <- as.character(data$Reference.Acq.Time[1])
+sen.scene <- as.character(data$Sentinel.Scene[1])
+sen <- as.character(data$Sentinel[1])
+sen.product <- as.character(data$Sentinel.Product[1])
+sen.date <- as.character(data$Sentinel.Acq.Date[1])
+sen.time <- as.character(data$Sentinel.Acq.Time[1])
+surface <- as.character(data$Surface[1])
+mean.area <- data$Area.km2.Scene[1]
+no.obs.total <- data$Observations.Scene[1]
+if(sen.product == 'MSI L2A'){sen.sensor <- 'MSI'}else{sen.sensor <- 'OLCI'}
+
+# common plot elements (already just in on-the-fly apu histogram creation)
+zeroline <- geom_hline(yintercept = 0, size=0.5, color='gray45')
+greyrectagle <- geom_rect(aes(xmin=-Inf,xmax=Inf,ymin=-5,ymax=5),alpha=0.1,fill='lightgray')
+commontheme <-theme_bw() + theme(plot.title = element_text(size=14, face='bold',hjust = 0.5))
+specshlines <- geom_hline(yintercept = c(-5,5), size = 0.5,linetype='longdash')
+```
+
+## load functions
+```{r}
+# RMSE 
+# = sqrt(mean(x^2))
+rmse <- function (x, y) {sqrt(mean((y-x)^2))} # double checked with rmse function from Metrics package
+
+# R2 
+# = (sum((observed - mean(observed))*(predicted - mean(predicted)))/sqrt(sum((observed - mean(observed))^2)*sum((predicted - mean(predicted))^2)))^2
+# r2 <- function(observed, predicted){
+#   o.meanDev <- observed - mean(observed)
+#   p.meanDev <- predicted - mean(predicted)
+#   numerator <- sum(o.meanDev*p.meanDev)
+#   o.meanDev.sq.sum <- sum(o.meanDev^2)
+#   p.meanDev.sq.sum <- sum(p.meanDev^2)
+#   denominator <- sqrt(o.meanDev.sq.sum*p.meanDev.sq.sum)
+#   r <- numerator/denominator
+#   r2 <- r^2
+#   return(r2)
+# }
+r2 <- function (x, y) cor(x, y) ^ 2 # same as above , but shorter -> results for all and band data checked
+
+# APU calculation
+calc_A <- function(band_subset,diff_colname){mean(band_subset[,diff_colname])}
+calc_P <- function(band_subset,diff_colname){sqrt((1/nrow(band_subset))*sum((band_subset[,diff_colname]-mean(band_subset[,diff_colname]))^2))}
+calc_U <- function(band_subset,diff_colname){sqrt((1/nrow(band_subset))*sum((band_subset[,diff_colname])^2))}
+calc_specs <- function(ref_data){ref_data*0.05 + 0.005} # the latter number only correct if the scaling factor is used
+
+# function to get legend
+g_legend <- function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == 'guide-box')
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+# adjustment functions for grid.arrange
+remove_legend <- function(plot){plot + theme(legend.position = 'none')}
+adapt_histograms <- function(plot,data){
+  plot + 
+    stat_function(data=df_Pfit,aes(x = x, color = 'Precision Fit'),
+                  fun = function(x) dnorm(x, mean = mean_Pfit,sd = sd_Pfit) * nrow(data) * binwidth, size = 1, linetype=2)+
+    stat_function(data=df_Ufit,aes(x = x,color = 'Uncertainty Fit'),
+                  fun = function(x) dnorm(x, mean = 0,sd = sd_Ufit) * nrow(data) * binwidth, size = 1, linetype=2)+
+    scale_y_continuous(sec.axis = sec_axis(~.*100/nrow(data),name='Frequency [%]'))+
+    scale_colour_manual(values = c('green3', 'blue'))
+}
+```
+
+## calculate APU Statistics
+```{r}
+# APU histogram lists
+# band.name.list <- list() #tried to solve it differently, for overview plots
+apuhisto.ybreaks.list <- list() # list of vectors
+apuhisto.axis.factor.list <- c() # vector
+apuhisto.count.list <- list() # list of dataframes
+apuhisto.melt.list <- list() # list of datafames
+apuhisto.list <- list() # list of plots
+# apuhisto.xmin.info.list <- c() # vector
+# apuhisto.xmax.info.list <- c() # vector
+# apuhisto.ymin.info.list <- c() # vector
+# apuhisto.ymax.info.list <- c() # vector
+
+# calculating band statistics
+i=0
+# band.name = 'Band9'
+for (band.name in all.bandnames){
+  i=i+1 # for lists
+  cat('\n',band.name,'\n') # for tracking
+  
+  # subset per band
+  band.subset <- data[data$Band %in% band.name,]
+  
+  # get error measures per band
+  RMSE.band <- rmse(band.subset$Reference.Reflectance, band.subset$Sentinel.Reflectance)
+  R2.band <- r2(band.subset$Reference.Reflectance, band.subset$Sentinel.Reflectance)
+  band.subset$RMSE.Band <- RMSE.band
+  band.subset$R2.Band <- R2.band
+  # cat('RMSE Band: ',RMSE.band,'\nR2 Band:   ',R2.band)
+  
+  # APU statistics and specs
+  band.subset$Specs <- calc_specs(band.subset$Reference.Reflectance.Band)
+  band.subset$A <- calc_A(band.subset,'Difference')
+  band.subset$P <- calc_P(band.subset,'Difference')
+  band.subset$U <- calc_U(band.subset,'Difference')
+  band.subset$Rel.A <- band.subset$A/band.subset$Reference.Reflectance.Band*100
+  band.subset$Rel.P <- band.subset$P/band.subset$Reference.Reflectance.Band*100
+  band.subset$Rel.U <- band.subset$U/band.subset$Reference.Reflectance.Band*100
+  
+  # store data
+  data[data$Band %in% band.name,colnames(band.subset)] <- band.subset
+    
+  # binned APU statistics
+  if(surface=='Land'){ # land
+    binwidth <- 0.01
+  }else{ # water
+    binwidth <- 0.001
+  }
+  ah.band.subset <- band.subset[,c('Band','Reference.Reflectance','Difference')]
+  ah.band.subset$bin <- cut(ah.band.subset$Reference.Reflectance,seq(0,max(ah.band.subset$Reference.Reflectance),by=binwidth),
+                            labels=FALSE,include.lowest = TRUE)
+  ah.band.subset[ah.band.subset$bin %in% NA,'bin'] <- max(ah.band.subset$bin, na.rm=TRUE)+1 # replace NA (max val) with additional class
+  binclasses <- unique(c(ah.band.subset$bin))
+  for (bin.class in binclasses){
+    ah.band.subset.bin <- ah.band.subset[ah.band.subset$bin %in% bin.class,]
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'Specs'] <- mean(calc_specs(ah.band.subset.bin$Reference.Reflectance))
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'A'] <- calc_A(ah.band.subset.bin,'Difference')
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'P'] <- calc_P(ah.band.subset.bin,'Difference')
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'U'] <- calc_U(ah.band.subset.bin,'Difference')
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'count'] <- nrow(ah.band.subset.bin)
+    ah.band.subset[ah.band.subset$bin %in% bin.class,'Reference.Reflectance.Band'] <- mean(ah.band.subset.bin[,'Reference.Reflectance'])
+  }
+  
+  # get count data
+  count.data <- unique(ah.band.subset[,c('count','Reference.Reflectance.Band')])
+  
+  # melt ah.band.subset
+  ah.band.subset <- ah.band.subset[,c('Band','bin','count','Reference.Reflectance.Band','Specs','A','P','U')]
+  ah.band.subset.melt <- melt(ah.band.subset, id=c('Band','bin','count','Reference.Reflectance.Band'))
+  ah.band.subset.melt <- unique(ah.band.subset.melt)# keep only data per bin
+  
+  # apu histogram parameters
+  if(surface == 'Land'){
+    apuhisto.xlim <- c(0,0.75)
+    apuhisto.ylim <- c(-0.25,0.3)
+  }else { # water
+    apuhisto.xlim <- c(0,0.12)
+    apuhisto.ylim <- c(-0.05,0.1)
+  }
+  apuhisto.labels <- c('SR Specifications','Accuracy Value','Precision Value','Uncertainty Value')
+  apuhisto.ybreaks <- seq(apuhisto.ylim[1],apuhisto.ylim[2],binwidth)
+  apuhisto.ybreaks.list[[i]] <- apuhisto.ybreaks
+  axis.factor.apuhisto <- (max(count.data$count)/apuhisto.ylim[2])# scaling for second axis (count)
+  apuhisto.axis.factor.list[i] <- axis.factor.apuhisto
+  count.data$count.scaled <- count.data$count/axis.factor.apuhisto
+  apuhisto.count.list[[i]] <- count.data
+  apuhisto.melt.list[[i]] <- ah.band.subset.melt
+  if(surface == 'Land'){
+    threshold <-sum(count.data$count)*0.0005 # 0.05 %
+  }else { # water
+    threshold <-sum(count.data$count)*0.01 #  1 %
+  }
+  
+  
+  # get ranges to adjust parameters
+  # apuhisto.xmin.info.list[i] <- min(ah.band.subset.melt[(ah.band.subset.melt$count > threshold),'Reference.Reflectance.Band'])
+  # apuhisto.xmax.info.list[i] <- max(ah.band.subset.melt[(ah.band.subset.melt$count > threshold),'Reference.Reflectance.Band'])
+  # # print(paste0('Min: ',apuhisto.xmin.info.list[i]))
+  # # print(paste0('Max: ',apuhisto.xmax.info.list[i]))
+  # apuhisto.ymin.info.list[i] <- min(ah.band.subset.melt[(ah.band.subset.melt$count > threshold)&(ah.band.subset.melt$variable %in% c('Reference.Reflectance.Band','Specs','A','P','U')),]$value)
+  # apuhisto.ymax.info.list[i] <- max(ah.band.subset.melt[(ah.band.subset.melt$count > threshold)&(ah.band.subset.melt$variable %in% c('Reference.Reflectance.Band','Specs','A','P','U')),]$value)
+  # # print(paste0('Min: ',apuhisto.ymin.info.list[i]))
+  # # print(paste0('Max: ',apuhisto.ymax.info.list[i]))
+  
+  # create APU histograms
+  apuhisto.plot <- ggplot()+
+    commontheme+
+    zeroline+
+    annotate(geom='text',x=apuhisto.xlim[1], y=apuhisto.ylim[1], hjust = 0, vjust = 0.05,#x=0.38, y=apuhisto.ylim[1]+(-apuhisto.ylim[1]/4)
+             label=paste0('\nRMSE: ',round(RMSE.band,digits = 3),'\nR2:       ',round(R2.band,digits = 3))) +
+    geom_bar(data=count.data,aes(x=Reference.Reflectance.Band,y=count.scaled),stat='identity',
+             color='lightgrey',fill='gray45', alpha=0.2)+ #ah.band.subset.melt
+    geom_line(data=ah.band.subset.melt[(ah.band.subset.melt$count > threshold)&(ah.band.subset.melt$variable %in% c('Reference.Reflectance.Band','Specs','A','P','U')),], # backed by more than 5% of the pixels
+              aes(x=Reference.Reflectance.Band, y=value, group=variable, col=variable, size=variable, linetype=variable))+
+    
+    geom_line(data=ah.band.subset.melt[(ah.band.subset.melt$count > threshold)&(ah.band.subset.melt$variable %in% 'Specs'),],
+              aes(x=Reference.Reflectance.Band, y=value*-1, group=variable), size=0.8, linetype='solid')+# lower specification
+    theme(legend.position = 'right',legend.title = element_blank(),
+          axis.title.y.right = element_text(colour = 'gray45'),
+          axis.text.y.right = element_text(colour = 'gray45'))+
+    labs(title=band.name, x = 'HyPlant SR',y = 'APU Value & SR Specs')+
+    coord_cartesian(ylim=apuhisto.ylim, xlim=apuhisto.xlim)+
+    scale_x_continuous(breaks=scales::pretty_breaks(ah.band.subset.melt$Reference.Reflectance.Band, n=6))+
+    scale_color_manual(labels=apuhisto.labels,values=c('black','red','green3','blue'))+
+    # scale_shape_manual(labels=apuhisto.labels,values=c(NA,3,4,8))+
+    scale_size_manual(labels=apuhisto.labels,values=c(1,1,1,0.8))+
+    scale_linetype_manual(labels=apuhisto.labels,values=c('solid','solid','solid','solid'))+
+    guides(color = guide_legend(override.aes = list(color = c('black','red','green3','blue'))))
+  apuhisto.list[[i]] <- apuhisto.plot
+  
+  # write individual plots to disc
+  # ggsave(file=paste0(val.id.file,'_apuhisto_plot_',band.name,'.png'),
+  #        plot= remove_legend(apuhisto.plot)+
+  #          scale_y_continuous(sec.axis = sec_axis(~.*axis.factor.apuhisto,name='Number of Pixels')),width=5, height=4, dpi = 300)
+}
+
+# get error bars
+data$MinError <- data$A - data$P
+data$MaxError <- data$A + data$P
+
+# get scene error measures
+RMSE.Scene<- mean(unique(data$RMSE.Band))
+R2.Scene <- mean(unique(data$R2.Band))
+data$RMSE.Scene<- RMSE.Scene
+data$R2.Scene <- R2.Scene
+cat('RMSE Scene: ',RMSE.Scene,'\nR2 Scene:   ',R2.Scene,'\n')
+
+# get scene averages
+data$Specs.Scene <- mean(unique(data$Specs))
+data$A.Scene <- mean(unique(data$A))
+data$P.Scene <- mean(unique(data$P))
+data$U.Scene <- mean(unique(data$U))
+data$Rel.A.Scene <- mean(unique(data$Rel.A))
+data$Rel.P.Scene <- mean(unique(data$Rel.P))
+data$Rel.U.Scene <- mean(unique(data$Rel.U))
+
+# # evaluate ranges
+# # evaluate x and ylimits for apu histograms
+# cat('\nApu Histogram XLIMs:\nMin: ',min(apuhisto.xmin.info.list),'\nMax: ',max(apuhisto.xmax.info.list),'\n') #maybe delete later if only land and water distinction
+# cat('\nApu Histogram YLIMs:\nMin: ',min(apuhisto.ymin.info.list),'\nMax: ',max(apuhisto.ymax.info.list),'\n')
+# cat('\nAPU YLIMs:\nMin: ',min(data[,c('A','P','U','MinError','MaxError')]),
+#     '\nMax: ',max(data[,c('A','P','U','MinError','MaxError')]),'\n')
+# cat('\nRelative APU YLIMs:\nMin: ',min(data[,c('Rel.A','Rel.P','Rel.U')]),
+#     '\nMax: ',max(data[,c('Rel.A','Rel.P','Rel.U')]),'\n')
+# cat('\nRegression YLIMs:\nMin: ',min(data[,c('Reference.Reflectance.Band','Sentinel.Reflectance.Band')]),
+#     '\nMax: ',max(data[,c('Reference.Reflectance.Band','Sentinel.Reflectance.Band')]),'\n')
+
+# write to disc
+write.csv(data, file = paste0(val.id.file,'_validation_data.csv'), row.names = FALSE)
+```
+
+
+# PLOTS
+## create plot datasets
+```{r}
+#----- load data frames from csv ------
+# data <- read.csv(paste0(val.id.file,'_validation_data.csv') , sep=',', dec='.')
+#--------------------------------------
+
+# create plot datasets
+apu.plot.data <- unique(subset(data, select=c(Band,Reference.Reflectance.Band,Specs,A,P,U,MinError,MaxError)))
+apu.plot.data <- melt(apu.plot.data, id=c('Band','MinError','MaxError'))
+apu.rel.plot.data <- unique(subset(data, select=c(Band,Rel.A,Rel.P,Rel.U)))
+apu.rel.plot.data <- melt(apu.rel.plot.data, id=c('Band'))
+```
+
+## plot parameters
+```{r}
+# APU plot
+apu.labels <- c('Mean HyPlant SR','SR Specifications','Accuracy Value','Precision Value','Uncertainty Value')
+  # scaling for second axis (Mean HyPlant/APEX SR) (left axis taken for plotting -> value adapted to match right axis)
+axis.factor <- 10
+apu.plot.data[apu.plot.data$variable %in% 'Reference.Reflectance.Band','value'] <- apu.plot.data[apu.plot.data$variable %in% 'Reference.Reflectance.Band','value']/axis.factor
+
+# relative APU plot
+apu.rel.labels <- c('Rel. Accuracy Value','Rel. Precision Value','Rel. Uncertainty Value')
+
+# regression plot
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  reg.shapes <- c(rep(c(15:18,20),2),15,16)
+}else{ #Sentinel-3
+  reg.shapes <- c(rep(c(15:18,20),3),15)
+}
+
+# error plot
+error.data <- unique(subset(data, select = c('Wavelength','RMSE.Band','R2.Band')))
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  error.data$Label <- c('B1','B2','B3','B4','B5','B6','B7','B8','B8A','B9','B11','B12')
+}else{
+  error.data$Label <- c('B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','B12',
+                        'B16','B17','B18','B21')
+}
+error.data <- melt(error.data, id.vars = c('Wavelength','Label'))
+
+# surface dependent parameters
+if(surface =='Land'){
+  # APU plot
+  apu.ylim <- c(-0.2,0.25) # max 0.2 before but france incomplete
+  apu.ybreaks <- seq(-0.2,0.25,0.05)# max 0.2 before but france incomplete
+  
+  # relative APU plot
+  apu.rel.ylim <- c(-50,400) #300 before but france incomplete, this way, same as water
+  apu.rel.ybreaks <- seq(-50,400,50)#300 before but france incomplete, this way, same as water
+  
+  # SR difference histogram
+    # all histograms  # passed to geom_histogram and stat_function  
+  histo.color.xlim <- c(-0.25,0.25)
+  histo.xlim <- c(-0.25,0.25)
+  binwidth <- 0.02
+  
+  # regression plot
+  reg.lim <- c(0,0.4)
+  
+}else{ # water
+  # APU plot
+  apu.ylim <- c(-0.06,0.06)
+  apu.ybreaks <- seq(-0.06,0.06,0.01)
+  
+  # relative APU plot
+  apu.rel.ylim <- c(-50,400)
+  apu.rel.ybreaks <- seq(-50,400,50)
+  
+  # SR difference histogram
+      # all histograms  # passed to geom_histogram and stat_function  
+  histo.color.xlim <- c(-0.05,0.05)
+  histo.xlim <- c(-0.05,0.05)
+  binwidth <- 0.005
+  
+  # regression plot
+  reg.lim <- c(0,0.1)
+}
+```
+
+## plotting
+```{r}
+# APU plot
+apu.plot <- ggplot(data = apu.plot.data)+
+  commontheme+
+  zeroline+
+  geom_errorbar(aes(x = Band, ymin=MinError,ymax=MaxError),
+                color= 'green3', linetype='longdash', size=1, width=0.2)+
+  geom_line(aes(x=Band, y=value, group=variable, col=variable, linetype=variable, size =variable))+
+  geom_point(aes(x=Band, y=value, group=variable, col=variable, shape=variable), size=2, stroke=1.5)+
+  geom_line(data=apu.plot.data[apu.plot.data$variable %in% 'Specs',],
+            aes(x=Band, y=-value, group=variable), size=0.8, linetype='dashed')+# lower specification
+  theme(legend.position = 'right',legend.title = element_blank(),
+        axis.title.y.right = element_text(colour = 'darkgoldenrod'),
+        axis.text.y.right = element_text(colour = 'darkgoldenrod'))+
+  labs(x = paste0(sen.sensor,' Band'),y = 'APU Value & SR Specs')+
+  scale_y_continuous(breaks=apu.ybreaks,
+                     sec.axis = sec_axis(~.*axis.factor,name=paste0('Mean ',ref.sensor,' SR'),
+                                         breaks=scales::pretty_breaks(apu.plot.data$value, n=5)),
+                     limits=apu.ylim)+
+  scale_color_manual(labels=apu.labels,values=c('darkgoldenrod','black','red','green3','blue'))+
+  scale_shape_manual(labels=apu.labels,values=c(1,NA,3,4,8))+
+  scale_size_manual(labels=apu.labels,values=c(1,0.8,1,1,1))+
+  scale_linetype_manual(labels=apu.labels,values=c('dashed','dashed','solid','solid','solid'))+
+  guides(color = guide_legend(override.aes = list(color = c('darkgoldenrod','black','red','green3','blue'))))
+
+# relative APU plot
+apu.rel.plot <- ggplot(data=apu.rel.plot.data)+
+  commontheme+
+  greyrectagle+
+  zeroline+
+  specshlines+
+  geom_line(aes(x=Band, y=value, group=variable,col=variable), size=1)+
+  geom_point(aes(x=Band, y=value, group=variable, col=variable, shape=variable),size=2, stroke=1.5)+
+  theme(legend.position = 'right',legend.title = element_blank())+
+  labs(x = paste0(sen.sensor,' Band'),y = paste0('APU Value / Mean ',ref.sensor,' SR'))+
+  scale_y_continuous(breaks=apu.rel.ybreaks,labels = function(x) paste0(x,'%'),limits = apu.rel.ylim)+
+  scale_color_manual(labels=apu.rel.labels,values=c('red','green3','blue'))+
+  scale_shape_manual(labels=apu.rel.labels,values=c(3,4,8))
+
+ # SR difference histogram
+histo.plot <- ggplot()+
+  commontheme+
+    theme(legend.position = 'top',legend.title = element_blank())+
+    geom_histogram(data=data, aes(x=Difference),color='black', fill='black', binwidth=binwidth)+
+    geom_vline(xintercept=0, size=0.5, color='gray45')+
+    xlim(histo.xlim)+
+    labs(x = paste0('SR Difference (',sen.product,' - ',ref.sensor,')'), y = 'Frequency')
+  # parameters that will be passed to stat_function when arranging plots
+n <- nrow(data)
+mean_Pfit <- mean(data$A)
+sd_Ufit <- mean(data$U)
+sd_Pfit <- mean(data$P)
+set.seed(1)
+df_Ufit <- data.frame(x = rnorm(n, 0, mean(data$U)))
+df_Pfit <- data.frame(x = rnorm(n, mean(data$A), mean(data$P)))
+
+# regression plot
+reg.plot <- ggplot(data = data)+
+  commontheme+
+  geom_abline(intercept=0,slope=1, col='black', size=1)+
+  geom_point(aes(x=Reference.Reflectance.Band, y=Sentinel.Reflectance.Band, col=Band, shape=Band),size=3)+
+  theme(legend.position = 'top',legend.title = element_blank())+
+  labs(x = paste0('Mean ',ref.sensor,' SR'),y = paste0('Mean ',sen.sensor,' SR'))+
+  scale_shape_manual(values=reg.shapes)+
+  xlim(reg.lim)+
+  ylim(reg.lim)
+
+# error plot --> needs polishing
+error.plot <- ggplot(data=error.data,aes(x=Wavelength, y=value, color=variable)) +
+  geom_hline(yintercept = 0, size=0.5, color='gray45')+
+  geom_hline(yintercept = 1, size=0.5, color='gray45')+
+  geom_vline(xintercept = c(unique(error.data$Wavelength)), color='grey',size=0.5, linetype='dashed')+
+  geom_line(size=1)+
+  geom_point(size=3)+
+  geom_text(aes(label=ifelse(variable=='RMSE.Band', Label,'')),col='black', hjust=0, vjust=-1, size=3)+
+  ylim(0,1)+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        legend.title = element_blank())+
+  labs(title = paste0('Error Measures\n',val.id) , 
+       subtitle=paste0('Site: ',site,
+                       '\nSentinel Scene: ',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'),
+       x = 'Wavelength [nm]',y = element_blank())+
+  scale_color_manual(values = c('purple','orange'),labels = c('RMSE', 'R2'))
+error.plot
+```
+
+## prepare overview plots
+```{r}
+# get legends and texts
+title1 <- textGrob(paste('Absolute and Relative APU Values and SR Histogram and Regression\n',val.id), gp=gpar(fontsize=14, font=2))
+title2 <- textGrob(paste('APU Histograms per Band\n',val.id), gp=gpar(fontsize=14, font=2))
+metadata1 <- textGrob(paste0('Site: ',site,'\nSentinel Scene: ',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'), 
+                      just='left',x=0.1, gp=gpar(fontsize=10, font=1))
+metadata2 <- textGrob(paste0('Surface: ',surface,'\nObservations: ',no.obs.total,'\nArea [km2]: ',round(mean.area,digits=3)), 
+                      just='left',x=0.4, gp=gpar(fontsize=10, font=1))
+metadata1indPlots <- textGrob(paste0('Site: ',site,'\nSentinel Scene: ',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'), 
+                      just='left',x=0.1, gp=gpar(fontsize=10, font=1))
+metadata2indPlots <- textGrob(paste0('Surface: ',surface,'\nObservations: ',no.obs.total,'\nArea [km2]: ',round(mean.area,digits=3)), 
+                              just='left',x=0.4, gp=gpar(fontsize=10, font=1))
+RMSE.Scene.t <- textGrob(paste0('RMSE: ',round(RMSE.Scene,digits=3)), gp=gpar(fontsize=14, font=2))
+R2.Scene.t <- textGrob(paste0('R2: ',round(R2.Scene,digits=3)), gp=gpar(fontsize=14, font=2))
+apu.legend <- g_legend(apu.plot)
+apuhisto.legend <- g_legend(apuhisto.plot)
+histo.legend <- g_legend(adapt_histograms(histo.plot,data))
+reg.legend <- g_legend(reg.plot)
+
+# get matrices for arrangement
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  lay.ind <- rbind(c(1,1,2),
+                 c(3,4,5),
+                 c(6,7,8),
+                 c(9,10,11),
+                 c(12,13,14),
+                 c(15,16,17))
+}else{ #Sentinel-3
+  lay.ind <- rbind(c(1,1,1,2),
+                 c(3,4,5,6),
+                 c(7,8,9,10),
+                 c(11,12,13,14),
+                 c(15,16,17,18),
+                 c(19,20,21,22))
+}
+```
+
+## create overview plots
+```{r}
+# plots for all bands
+all.bands.plots <- grid.arrange(metadata1,metadata2,
+                                RMSE.Scene.t, R2.Scene.t,
+                                apu.legend, histo.legend,
+                                remove_legend(apu.plot),remove_legend(adapt_histograms(histo.plot,data)),
+                                remove_legend(apu.rel.plot),reg.plot,
+                                nrow=5, heights=c(1,0.3,1.5,5,5), widths=c(5,3), 
+                                top= title1)
+all.bands.plots
+
+# individual band plots
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  ind.bands.plots <- grid.arrange(metadata1indPlots,metadata2indPlots,#rectGrob(gp=gpar(col=NA)),
+                                  apuhisto.legend, RMSE.Scene.t, R2.Scene.t,
+                 remove_legend(apuhisto.list[[1]])+labs(title=all.bandnames[1])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[1]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[1],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[1]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[2]])+labs(title=all.bandnames[2])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[2]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[2],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[2]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[3]])+labs(title=all.bandnames[3])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[3]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[3],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[3]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[4]])+labs(title=all.bandnames[4])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[4]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[4],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[4]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[5]])+labs(title=all.bandnames[5])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[5]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[5],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[5]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[6]])+labs(title=all.bandnames[6])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[6]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[6],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[6]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[7]])+labs(title=all.bandnames[7])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[7]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[7],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[7]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[8]])+labs(title=all.bandnames[8])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[8]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[8],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[8]]$count.scaled, n=6))),
+                  remove_legend(apuhisto.list[[9]])+labs(title=all.bandnames[9])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[9]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[9],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[9]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[10]])+labs(title=all.bandnames[10])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[10]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[10],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[10]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[11]])+labs(title=all.bandnames[11])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[11]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[11],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[11]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[12]])+labs(title=all.bandnames[12])+
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[12]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[12],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[12]]$count.scaled, n=6))),
+                 layout_matrix = lay.ind, heights=c(1,1,3,3,3,3),
+                 top=title2)
+  
+}else{ # Sentinel-3
+  ind.bands.plots <- grid.arrange(metadata1indPlots,metadata2indPlots,
+                                  apuhisto.legend,grid.rect(gp=gpar(col='white')), RMSE.Scene.t, R2.Scene.t,
+                 remove_legend(apuhisto.list[[1]])+labs(title=all.bandnames[[1]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[1]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[1]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[1]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[2]])+labs(title=all.bandnames[[2]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[2]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[2]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[2]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[3]])+labs(title=all.bandnames[[3]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[3]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[3]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[3]]$count.scaled, n=6))),
+                remove_legend(apuhisto.list[[4]])+labs(title=all.bandnames[[4]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[4]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[4]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[4]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[5]])+labs(title=all.bandnames[[5]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[5]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[5]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[5]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[6]])+labs(title=all.bandnames[[6]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[6]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[6]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[6]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[7]])+labs(title=all.bandnames[[7]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[7]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[7]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[7]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[8]])+labs(title=all.bandnames[[8]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[8]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[8]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[8]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[9]])+labs(title=all.bandnames[[9]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[9]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[9]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[9]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[10]])+labs(title=all.bandnames[[10]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[10]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[10]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[10]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[11]])+labs(title=all.bandnames[[11]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[11]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[11]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[11]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[12]])+labs(title=all.bandnames[[12]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[12]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[12]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[12]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[13]])+labs(title=all.bandnames[[13]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[13]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[13]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[13]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[14]])+labs(title=all.bandnames[[14]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[14]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[14]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[14]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[15]])+labs(title=all.bandnames[[15]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[15]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[15]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[15]]$count.scaled, n=6))),
+                 remove_legend(apuhisto.list[[16]])+labs(title=all.bandnames[[16]])+ 
+                   scale_y_continuous(breaks=scales::pretty_breaks(apuhisto.melt.list[[16]]$value, n=6),
+                                      sec.axis = sec_axis(~.*apuhisto.axis.factor.list[[16]],name='Number of Pixels',
+                                                          breaks=scales::pretty_breaks(apuhisto.count.list[[16]]$count.scaled, n=6))),
+                 layout_matrix = lay.ind, heights=c(1,1,3,3,3,3),
+                 top=title2)
+}
+ind.bands.plots               
+```
+
+## write legends and individual plots to disc
+```{r}
+# # apu.legend
+# ggsave(file='apu_legend.png',plot=apu.legend, width=1.5, height=1.5, dpi = 300)
+# 
+# # apuhisto.legend
+# ggsave(file='apuhisto_legend.png',plot=apuhisto.legend, width=1.5, height=1, dpi = 300)
+# 
+# # histo.legend
+# ggsave(file='histo_legend.png',plot=histo.legend, width=2.5, height=0.5, dpi = 300)
+# 
+# # apu.plot
+# ggsave(file=paste0(val.id.file,'_apu_plot.png'),plot=remove_legend(apu.plot), width=8, height=4, dpi = 300)
+# 
+# # apu.rel.plot
+# ggsave(file=paste0(val.id.file,'_apu_rel_plot.png'),plot=remove_legend(apu.rel.plot), width=8, height=4, dpi = 300)
+# 
+# # histo.plot
+# ggsave(file=paste0(val.id.file,'_histo_plot.png'),plot=adapt_histograms(histo.plot,data), width=6, height=5, dpi = 300)
+# 
+# # reg.plot
+# ggsave(file=paste0(val.id.file,'_reg_plot.png'),plot=reg.plot, width=6, height=5, dpi = 300)
+```
+
+## write overview plots to disc
+```{r}
+# plots for all bands
+ggsave(file=paste0(val.id.file,'_plotAllBands.png'),plot=all.bands.plots, width=15, height=12, dpi = 300)
+
+# plots for individual bands
+ggsave(file=paste0(val.id.file,'_plotIndBands.png'),plot=ind.bands.plots, width=15, height=15, dpi = 300)
+
+# error plot
+ggsave(file=paste0(val.id.file,'_plotError.png'),plot=error.plot, width=13, height=6, dpi = 300)
+```
+
+
+# SUMMARY TABLE
+## Scene
+```{r}
+# get scene data
+summary.scene <- subset(data, select = c(Validation.ID,Site,Surface,Observations.Scene,Area.km2.Scene,
+                                         Reference.Scene,Reference.Sensor,Reference.Acq.Date,Reference.Acq.Time,
+                                         Sentinel.Scene,Sentinel,Sentinel.Product,Sentinel.Acq.Date,Sentinel.Acq.Time,
+                                         Reference.Reflectance.Scene,Sentinel.Reflectance.Scene,Difference.Scene,
+                                         RMSE.Scene,R2.Scene,
+                                         Specs.Scene,A.Scene,P.Scene,U.Scene,Rel.A.Scene,Rel.P.Scene,Rel.U.Scene))
+
+# round to 3 decimal places
+summary.scene[,c(15:ncol(summary.scene))] <- round(summary.scene[,c(15:ncol(summary.scene))],digits=3)
+
+# reduce to one row
+summary.scene <- unique(summary.scene)
+
+# write to disc
+write.csv(summary.scene, file = paste0(val.id.file,'_summary_Scene.csv'),row.names = FALSE)
+
+# clean up names
+rownames(summary.scene) <- val.id
+summary.scene <- summary.scene[,-1] # remove val.id column as already in rownames
+colnames(summary.scene) <- c('Site','Surface','Observations', 'Area [km2]', 
+                                  'Reference Scene','Reference Sensor', 'Reference Acq. Date','Reference Acq. Time',
+                                  'Sentinel Scene','Sentinel','Sentinel Product','Sentinel Acq. Date','Sentinel Acq. Time',
+                                  'Reference Reflectance','Sentinel Reflectance','Difference',
+                                  'RMSE','R2',
+                                  'Specs','Accuracy Value','Precision Value','Uncertainty Value',
+                                  'Rel. Accuracy Value [%]','Rel. Precision Value [%]','Rel. Uncertainty Value [%]')
+
+# transpose
+summary.scene <- t(summary.scene)
+
+# adjust appearance
+theme.scene <- ttheme_default(core=list(fg_params = list(hjust=0, x=0.01),
+                                    bg_params = list(fill=c(rep('gold',4),
+                                                            rep('darkgreen',4),
+                                                            rep('red',5),
+                                                            rep('cadetblue1',3),
+                                                            rep('lightgrey',9)),
+                                                     alpha = 0.3)),
+                          colhead=list(bg_params = list(fill= 'white')))
+grid.table(summary.scene, theme=theme.scene)
+
+# write to disc
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  png(paste0(val.id.file,'_summary_Scene.png'), width = 2700, height = 2300, res=300)
+    grid.table(summary.scene, theme=theme.scene)
+  dev.off()
+}else{ #Sentinel-3
+  png(paste0(val.id.file,'_summary_Scene.png'), width = 3800, height = 2300, res=300)
+    grid.table(summary.scene, theme=theme.scene)
+  dev.off()
+}
+```
+
+## Bands
+```{r}
+# get bands data
+summary.bands <- subset(data, select = c(Validation.ID,Site,Surface,
+                                         Reference.Scene,Reference.Sensor,Reference.Acq.Date,
+                                         Sentinel.Scene,Sentinel,Sentinel.Product,Sentinel.Acq.Date,
+                                         Band,Resolution,Observations.Band,Area.km2.Band,
+                                         Reference.Reflectance.Band, Sentinel.Reflectance.Band,Difference.Band,
+                                         RMSE.Band,R2.Band,
+                                         Specs,A,P,U,Rel.A,Rel.P,Rel.U))
+
+# round to 3 decimal places
+summary.bands[,14:ncol(summary.bands)] <- round(summary.bands[,14:ncol(summary.bands)],digits=3)
+
+# reduce to one row
+summary.bands <- unique(summary.bands)
+
+# write to disc
+write.csv(summary.bands, file = paste0(val.id.file,'_summary_Bands.csv'),row.names = FALSE)
+
+# remove irrelevant data
+summary.bands <- summary.bands[,-1:-10]
+
+# clean up names
+colnames(summary.bands) <- c('Band','Spatial\nResolution [m]','Observations', 'Area\n[km2]',
+                             'Reference\nReflectance','Sentinel\n Reflectance','Difference','RMSE','R2',
+                             'Specs','Accuracy\nValue','Precision\nValue','Uncertainty\nValue',
+                             'Rel. Accuracy\nValue [%]','Rel. Precision\nValue [%]','Rel. Uncertainty\nValue [%]')
+rownames(summary.bands) <- summary.bands$Band
+
+# remove band column
+summary.bands <- summary.bands[,-1]
+
+# adjust appearance
+theme.bands <- ttheme_default(core=list(fg_params = list(hjust=0.5)))
+grid.table(summary.bands, theme=theme.bands)
+grid.arrange(textGrob(val.id, gp = gpar(fontsize=14, font=2)),# 5 spaces, as hjust only works on a single line
+             textGrob(paste0('     Site: ',site,
+                             '\n     Sentinel Scene: ',sen.scene,' (',sen.date,', ',sen.time,
+                             ')\n     Reference Scene: ',ref.scene,' (',ref.date,', ',ref.time,')'),
+                      gp = gpar(fontsize=14, font=1),
+                      x = unit(2.5, "lines"), y = unit(0, "lines"), 
+                      just = "left", hjust = 0, vjust = 0),
+             tableGrob(summary.bands, theme=theme.bands),
+             nrow=3, heights=c(0.5,1.5,8))
+
+# write to disc
+if(data$Sentinel[1] == 'Sentinel-2A' | data$Sentinel[1] == 'Sentinel-2B'){
+  png(paste0(val.id.file,'_summary_Bands.png'), width = 4800, height = 1600, res=300)
+    grid.arrange(textGrob(val.id, gp = gpar(fontsize=14, font=2)),# 5 spaces, as hjust only works on a single line
+                 textGrob(paste0('     Site: ',site,
+                                 '\n     Sentinel Scene: ',sen.scene,' (',sen.date,', ',sen.time,
+                                 ')\n     Reference Scene: ',ref.scene,' (',ref.date,', ',ref.time,')'),
+                          gp = gpar(fontsize=14, font=1),
+                          x = unit(2.5, "lines"), y = unit(0, "lines"), 
+                          just = "left", hjust = 0, vjust = 0),
+                 tableGrob(summary.bands, theme=theme.bands),
+                 nrow=3, heights=c(0.5,1.5,8))
+  dev.off()
+}else{ #Sentinel-3
+  png(paste0(val.id.file,'_summary_Bands.png'), width = 4800, height = 2000, res=300)
+    grid.arrange(textGrob(val.id, gp = gpar(fontsize=14, font=2)),# 5 spaces, as hjust only works on a single line
+             textGrob(paste0('     Site: ',site,
+                             '\n     Sentinel Scene: ',sen.scene,' (',sen.date,', ',sen.time,
+                             ')\n     Reference Scene: ',ref.scene,' (',ref.date,', ',ref.time,')'),
+                      gp = gpar(fontsize=14, font=1),
+                      x = unit(2.5, "lines"), y = unit(0, "lines"), 
+                      just = "left", hjust = 0, vjust = 0),
+             tableGrob(summary.bands, theme=theme.bands),
+             nrow=3, heights=c(0.5,1.5,8))
+  dev.off()
+}
+```
+
+```{r}
+```

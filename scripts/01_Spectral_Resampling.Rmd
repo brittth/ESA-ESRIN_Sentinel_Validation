@@ -1,0 +1,267 @@
+---
+title: 'Spectral Resampling'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# SETTINGS (Adjust them!)
+```{r}
+# val.id <- 'A'
+# val.id <- 'B'
+# val.id <- 'C'
+# val.id <- 'D'
+# val.id <- 'E'
+# val.id <- 'F'
+# val.id <- 'G'
+# val.id <- 'H'
+
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# load packages
+```{r}
+# install.packages('raster')
+# install.packages('hsdar')
+# install.packages('stringr')
+library(raster)
+library(hsdar)
+library(stringr)
+```
+
+# load data
+```{r}
+# load meta data
+meta <- read.csv('Metadata.csv')
+
+# subset meta to relevant dataset by Validation ID
+meta <- meta[meta$Validation.ID %in% val.id,]
+
+# list validation ids referring to this reference imagery
+val.ids <- c(paste0(val.id,' Land'),paste0(val.id,' Water'))
+
+# adjust val.ids
+for(i in 1:length(val.ids)){
+  val.ids[i] <- chartr(' ', '_', val.ids[i])
+}
+
+# load hyperspectral data
+file <- paste0(meta$Reference.Scene.Path,meta$Reference.Scene,meta$Reference.Scene.Filetype)
+H <- brick(file)
+
+#--- load my mosaic ---
+# file <- 'C:/Users/britta themann/Documents/Mosaicing/output/20180718-S3IT-1155-1200-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect_BT_2020-10-02.gri'
+# H <- brick(file)
+# H <- brick(H[[10:364]]) # should not be necessary as bsq shoot over spectral range too
+# H <- brick(dropLayer(H, c(1:9,365:nlayers(H)))) #try again
+# plot(H[[1]])
+# names(H)
+# H <- H[[10:364]]
+# names(H)
+# spectral range of data: 373.71 - 2503.31 nm
+# spectral range of S3 SRF: 387.75 - 1043.77 nm
+#----------------------
+
+
+# load band information (optional)-----
+# bandnames <- read.csv('input/HyPlant_mosaic_bandnames.txt', header = FALSE)
+# bandnames <- as.vector(bandnames$V1)
+# 
+# # rename bands(optional)
+# names(H) <- bandnames
+# -------------------------------------
+```
+
+# load spectral response function (SRF)
+```{r}
+# get bands
+S2.bands <- c('Band1','Band2','Band3','Band4','Band5','Band 6','Band 7','Band 8','Band 8A','Band 9','Band 10','Band 11','Band 12')
+S3.bands <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band9','Band10','Band11',
+             'Band12','Band13','Band14','Band15','Band16','Band17','Band18','Band19','Band20','Band21')
+
+
+# load spectral response function for the respective Sentinel satellite
+if(meta$Sentinel == 'Sentinel-2A'){
+  SRF <- read.csv('scripts/input/S2A-SRF_COPE-GSEG-EOPG-TN-15-0007_3.0.csv', header = TRUE, sep = ',', dec = '.') #S2A
+  SRF <- SRF[,1:14] #otherwise some strange empty columns
+  bands <- S2.bands
+}
+
+if(meta$Sentinel == 'Sentinel-2B'){
+  SRF <- read.csv('scripts/input/S2B-SRF_COPE-GSEG-EOPG-TN-15-0007_3.0.csv', header = TRUE, sep = ',', dec = '.') #S2B
+  SRF <- SRF[,1:14] #otherwise some strange empty columns
+  bands <- S2.bands
+}
+
+if(meta$Sentinel == 'Sentinel-3A'){
+# load spectral response function
+SRF.unformatted <- read.csv('scripts/input/S3A_OL_SRF_20160713_mean_rsr_reformatted_for_use.csv', header = TRUE, sep = ',', dec = '.') # only OLCI
+  
+  # reformat for the SRF for use of the hsdar package
+    # rename columns
+  names(SRF.unformatted) <- c('wavelength1','Band1','wavelength2','Band2','wavelength3','Band3','wavelength4','Band4',
+                              'wavelength5','Band5','wavelength6','Band6','wavelength7','Band7','wavelength8','Band8',
+                              'wavelength9','Band9','wavelength10','Band10','wavelength11','Band11','wavelength12','Band12',
+                              'wavelength13','Band13','wavelength14','Band14','wavelength15','Band15','wavelength16','Band16',
+                              'wavelength17','Band17','wavelength18','Band18','wavelength19','Band19','wavelength20','Band20',
+                              'wavelength21','Band21')
+    # remove decimal zeroes
+  SRF.unformatted[,c(1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41)] <- round(SRF.unformatted[,c(1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41)],digits = 2)
+    # list S3 bands
+  bands <- S3.bands
+  
+  # create the final SRF
+  SRF <- data.frame('wavelength'= seq(387.75,1043.77,0.01))
+  for (band.no in 1:length(bands)){
+    band.name <- paste0('Band',band.no)
+    wl.name <- paste0('wavelength',band.no)
+    SRF <- merge(SRF,SRF.unformatted[,c(band.name,wl.name)], by.x='wavelength', by.y=wl.name, all.x=TRUE)
+  }
+  SRF[is.na(SRF)] <- 0
+}
+# 
+# if(meta$Sentinel == 'Sentinel-3B'){
+#   #TO BE COMPLETED
+# }
+```
+
+# plot SRF
+```{r}
+# save in validaton id folder
+for(i in 1:length(val.ids)){
+
+  # create directories
+  dir.create(val.ids[i])
+
+  # plot and save SRF plot
+  png(paste0(val.ids[i],'/','SRF_',meta$Sentinel,'.png'), width = 4800, height = 1600, res= 300)
+
+    # Sentinel-2
+    if(meta$Sentinel == 'Sentinel-2A'| meta$Sentinel == 'Sentinel-2B'){
+      plot(SRF[,c(1,2)], type = 'l', col = 'black',
+                     xlab = 'Wavelength [nm]', ylab = 'Spectral response',
+                     xlim = c(330,2600), ylim = c(0,1),
+                     main = paste0(meta$Sentinel,' SRF'))
+      lines(SRF[,c(1,3)], col = 'red')
+      lines(SRF[,c(1,4)], col = 'green')
+      lines(SRF[,c(1,5)], col = 'blue')
+      lines(SRF[,c(1,6)], col = 'turquoise1')
+      lines(SRF[,c(1,7)], col = 'magenta')
+      lines(SRF[,c(1,8)], col = 'yellow')
+      lines(SRF[,c(1,9)], col = 'grey')
+      lines(SRF[,c(1,10)], col = 'black')
+      lines(SRF[,c(1,11)], col = 'red')
+      lines(SRF[,c(1,12)], col = 'green')
+      lines(SRF[,c(1,13)], col = 'blue')
+      lines(SRF[,c(1,14)], col = 'turquoise1')
+      legend('topright', legend=bands,
+             col=c('black','red','green','blue','turquoise1','magenta','yellow','grey','black','red','green','blue','turquoise1'),
+             lty =1,cex=0.8)
+
+    # Sentinel-3
+    }else{
+      plot(SRF[,c(1,2)], type = 'l', col = 'black',
+           xlab = 'Wavelength [nm]', ylab = 'Spectral response',
+           xlim = c(380,1050), #ylim = c(0,1),
+           main = paste0(meta$Sentinel,' SRF'))
+      lines(SRF[,c(1,3)], col = 'red')
+      lines(SRF[,c(1,4)], col = 'green')
+      lines(SRF[,c(1,5)], col = 'blue')
+      lines(SRF[,c(1,6)], col = 'turquoise1')
+      lines(SRF[,c(1,7)], col = 'magenta')
+      lines(SRF[,c(1,8)], col = 'yellow')
+      lines(SRF[,c(1,9)], col = 'grey')
+      lines(SRF[,c(1,10)], col = 'black')
+      lines(SRF[,c(1,11)], col = 'red')
+      lines(SRF[,c(1,12)], col = 'green')
+      lines(SRF[,c(1,13)], col = 'blue')
+      lines(SRF[,c(1,14)], col = 'turquoise1')
+      lines(SRF[,c(1,15)], col = 'magenta')
+      lines(SRF[,c(1,16)], col = 'yellow')
+      lines(SRF[,c(1,17)], col = 'grey')
+      lines(SRF[,c(1,18)], col = 'black')
+      lines(SRF[,c(1,19)], col = 'red')
+      lines(SRF[,c(1,20)], col = 'green')
+      lines(SRF[,c(1,21)], col = 'blue')
+      lines(SRF[,c(1,22)], col = 'turquoise1')
+      legend('topright', legend=bands,col=c('black','red','green','blue','turquoise1','magenta','yellow','grey',
+                                               'black','red','green','blue','turquoise1','magenta','yellow','grey',
+                                               'black','red','green','blue','turquoise1'),lty =1,cex=0.8)
+    }
+
+  dev.off()
+
+  # write plot to disc --> more elegant but couldn't get it working
+  # ggsave(file=paste0(pathname,'/SRF_S2',Sentinel2,'.png'),plot=srf.plot, width=12, height=4, dpi = 300)
+}
+```
+
+# adjust hyperspectral data to speclib file (wavelength=vector, spectra=matrix)
+```{r}
+# get wavelengths of hyperspectral data
+H.wl <- c()
+
+for (i in 1:nlayers(H)){ #not tested with \\ yet for tif img
+  if (str_detect(file,'\\.tif',negate=FALSE)){ #*1000 for conversion to nm
+    H.wl[i] <- as.numeric(substr(names(H[[i]]),9,nchar(names(H[[i]]))))*1000
+    # print('1')
+  } else if (str_detect(file,'\\.bsq',negate=FALSE)){
+    H.wl[i] <- as.numeric(str_sub(names(H[[i]]),-9,-2))*1000 #if bsq file
+    # print('2')
+  } else if (str_detect(file,'\\.img',negate=FALSE)){
+    H.wl[i] <- as.numeric(substr(names(H[[i]]),2,9))*1000 #if img file
+    # print('3')
+  } else {
+    H.wl[i] <- as.numeric(substr(names(H[[i]]),9,nchar(names(H[[i]]))))*1000#if gri file (self-made mosaics)
+    # print('4')
+  }
+}
+
+# adjust hyperspectral spectra (H) --> band names need to be Xwavelength
+# H.wl <- round(H.wl) # test with rounding for my tif-mosaics
+names(H) <- paste0('X',H.wl)
+
+# create speclib files
+H.speclib <- speclib(H, H.wl)
+is.speclib(H.speclib)
+H.speclib@spectra@spectra_ra #has min and max
+```
+
+# spectral resampling of the hyperspectral data using the given SRF
+```{r}
+# convert given spectral response function to speclib file
+weights <- na.omit(as.matrix(SRF[,-1])) # spectral response weights like spectra
+SRF.wl <- na.omit(as.vector(SRF[,1]))
+SRF.speclib <- speclib(weights, SRF.wl)
+
+#------- my mosaic test---------
+# H.specres.speclib <- spectralResampling(H.speclib, response_function = SRF.speclib)
+# H.specres.speclib <- spectralResampling(H.speclib, response_function = SRF.speclib, rm.NA = TRUE, continuousdata = 'auto') # does not work with mosaics
+#-------------------------------
+
+# resampling
+H.specres.speclib <- spectralResampling(H.speclib, response_function = SRF.speclib) 
+# H.specres.speclib <- spectralResampling(H.speclib,'Sentinel2', response_function = TRUE) #built-in function # does not improve result with my mosaics
+H.specres <- brick(H.specres.speclib) 
+H.specres
+
+# declare NAs
+H.specres <- reclassify(H.specres, cbind(-Inf, 0, NA), right=TRUE) #right=TRUE to include 0 for conversion to NA
+names(H.specres) <- bands
+H.specres
+# plot(H.specres[[1]])
+```
+
+# write to disc
+```{r}
+# save for each validation id
+for(i in 1:length(val.ids)){
+  # write to disc
+  writeRaster(H.specres, 
+              filename=paste0(val.ids[i],'/',meta$Reference.Scene,'_specres',substr(meta$Sentinel.Scene,0,3),'.tif'), 
+              options='INTERLEAVE=BAND', overwrite=TRUE)
+}
+```
+
+```{r}
+```

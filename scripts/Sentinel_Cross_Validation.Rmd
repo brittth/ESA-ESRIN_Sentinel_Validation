@@ -1,0 +1,662 @@
+---
+title: 'Sentinel_Cross_Validation'
+author: 'Britta Themann'
+date: '23 March 2020'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# settings (ADJUST THEM!)
+```{r}
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# load packages
+```{r}
+# install.packages('stringr')
+# install.packages('stats')
+# install.packages('ggplot2')
+# install.packages('reshape2')
+# install.packages('gridExtra')
+# install.packages('grid')
+# install.packages('lubridate')
+# install.packages('scales')
+library(stringr)
+library(stats)
+library(ggplot2)
+library(reshape2)
+library(grid)
+library(gridExtra)
+library(lubridate)
+library(scales)
+```
+
+# load data
+```{r}
+# create file list
+file.list.data <- list.files(pattern='validation', recursive = TRUE)
+file.list.scene <- list.files(pattern='Scene.csv', recursive = TRUE)
+file.list.bands <- list.files(pattern='Bands.csv', recursive = TRUE)
+
+# load meta data
+meta <- read.csv('Metadata.csv')
+```
+
+# create dataframes
+```{r}
+# setting band order
+S2bands <- c('Band1','Band2','Band3','Band4','Band5','Band6',
+                  'Band7','Band8','Band8A','Band9','Band11','Band12')
+S3bands <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7',
+                  'Band8','Band9','Band10','Band11','Band12','Band16','Band17','Band18','Band21')
+
+# prepare lists
+data.list <- list()
+scene.data.list <- list()
+band.data.list <- list()
+
+# prepare colorsets
+colorset <- c()
+colorset.S2 <- c()
+colorset.S3 <- c()
+  
+# go through each file
+for (file in 1:length(file.list.data)){ # lists should all have the same lengths
+# file=1
+  
+  cat(paste0('\n\n',file.list.data[file]))
+  
+  # load dataframes
+  data <- read.csv(file.list.data[file])
+  scene.data <- read.csv(file.list.scene[file])
+  band.data <- read.csv(file.list.bands[file])
+  
+  # store dataframe in list
+  data.list[[file]] <- data
+  scene.data.list[[file]] <- scene.data
+  band.data.list[[file]] <- band.data
+}
+
+# combine list data into one dataframe
+data <- do.call(rbind,data.list)
+scene.data <- do.call(rbind,scene.data.list)
+band.data <- do.call(rbind,band.data.list)
+
+# write data to disc (before being subset to a certain surface below)
+write.csv(scene.data, 'Summary_Scenes.csv',row.names = FALSE)
+write.csv(band.data, 'Summary_Bands.csv',row.names = FALSE)
+```
+
+# prepare data for plots
+```{r}
+#---------- load csv for testing -----------------
+# scene.data <- read.csv(file = 'Summary_Scenes.csv.csv')
+# colnames(scene.data) <- scene.data.colnames
+#-------------------------------------------------
+
+# scene comparison plots
+scene.data.m <- melt(scene.data, id.vars = colnames(scene.data[,1:14]))
+scene.data.m$value <- as.numeric(scene.data.m$value)
+scene.data.m.apu <- scene.data.m[scene.data.m$variable %in% 'A.Scene' |
+                      scene.data.m$variable %in% 'P.Scene' |
+                      scene.data.m$variable %in% 'U.Scene',]
+scene.data.m.apu$Specs.Scene <- scene.data$Specs.Scene
+scene.data.m.apu.rel <- scene.data.m[scene.data.m$variable %in% 'Rel.A.Scene' |
+                      scene.data.m$variable %in% 'Rel.P.Scene' |
+                      scene.data.m$variable %in% 'Rel.U.Scene',]
+scene.data.m.error <- scene.data.m[scene.data.m$variable %in% 'RMSE.Scene' |
+                      scene.data.m$variable %in% 'R2.Scene',]
+scene.data.m.error[scene.data.m.error$variable %in% 'RMSE.Scene', 'ideal'] <- 0
+scene.data.m.error[scene.data.m.error$variable %in% 'R2.Scene', 'ideal'] <- 1
+
+# band comparison plots
+  # subsetting S2 and S3 data 
+data.S2 <- data[grepl('Sentinel-2',data$Sentinel),]
+data.S3 <-data[grepl('Sentinel-3',data$Sentinel),]
+band.data.S2 <- band.data[grepl('Sentinel-2',band.data$Sentinel),]
+band.data.S3 <-band.data[grepl('Sentinel-3',band.data$Sentinel),]
+
+  # melt
+band.data.m <- melt(band.data, id.vars = colnames(band.data[,c(1:14)]))
+band.data.m$value <- as.numeric(band.data.m$value)
+band.data.m.apu <- band.data.m[band.data.m$variable %in% 'A' |
+                      band.data.m$variable %in% 'P' |
+                      band.data.m$variable %in% 'U',]
+band.data.m.apu$Specs <- band.data$Specs
+band.data.m.apu.S2  <- band.data.m.apu[grepl('Sentinel-2',band.data.m.apu$Sentinel),]
+band.data.m.apu.S3  <- band.data.m.apu[grepl('Sentinel-3',band.data.m.apu$Sentinel),]
+band.data.m.apu.rel <- band.data.m[band.data.m$variable %in% 'Rel.A' |
+                      band.data.m$variable %in% 'Rel.P' |
+                      band.data.m$variable %in% 'Rel.U',]
+band.data.m.apu.rel.S2  <- band.data.m.apu.rel[grepl('Sentinel-2',band.data.m.apu.rel$Sentinel),]
+band.data.m.apu.rel.S3  <- band.data.m.apu.rel[grepl('Sentinel-3',band.data.m.apu.rel$Sentinel),]
+band.data.m.error <- band.data.m[band.data.m$variable %in% 'RMSE.Band' |
+                      band.data.m$variable %in% 'R2.Band',] 
+band.data.m.error[band.data.m.error$variable %in% 'RMSE.Band', 'ideal'] <- 0
+band.data.m.error[band.data.m.error$variable %in% 'R2.Band', 'ideal'] <- 1
+band.data.m.error.S2  <- band.data.m.error[grepl('Sentinel-2',band.data.m.error$Sentinel),]
+band.data.m.error.S3  <- band.data.m.error[grepl('Sentinel-3',band.data.m.error$Sentinel),]
+
+# correct band.order
+data.S2$Band <- factor(data.S2$Band, levels= S2bands)
+data.S3$Band <- factor(data.S3$Band, levels= S3bands)
+band.data.S2$Band <- factor(band.data.S2$Band, levels= S2bands)
+band.data.S3$Band <- factor(band.data.S3$Band, levels= S3bands)
+band.data.m.apu.S2$Band <- factor(band.data.m.apu.S2$Band, levels= S2bands)
+band.data.m.apu.S3$Band <- factor(band.data.m.apu.S3$Band, levels= S3bands)
+band.data.m.apu.rel.S2$Band <- factor(band.data.m.apu.rel.S2$Band, levels= S2bands)
+band.data.m.apu.rel.S3$Band  <- factor(band.data.m.apu.rel.S3$Band, levels= S3bands)
+band.data.m.error.S2$Band <- factor(band.data.m.error.S2$Band, levels= S2bands)
+band.data.m.error.S3$Band <- factor(band.data.m.error.S3$Band, levels= S3bands)
+
+
+# prepare plot storage
+plot.data.list <- list(data,data.S2,data.S3,
+                       scene.data,band.data.S2,band.data.S3,
+                       scene.data.m.apu,band.data.m.apu.S2,band.data.m.apu.S3,
+                       scene.data.m.apu.rel,band.data.m.apu.rel.S2,band.data.m.apu.rel.S3,
+                       scene.data.m.error,band.data.m.error.S2,band.data.m.error.S3)
+
+# get colorsets
+color.df <- data.frame('Validation.ID' = data$Validation.ID, 'Sentinel'=data$Sentinel, 'Color'= NA)
+color.df <- unique(color.df)
+for(val.id in meta$Validation.ID){
+  color.df[grepl(val.id,color.df$Validation.ID),'Color'] <- as.character(meta[meta$Validation.ID %in% val.id,'Color'])
+}
+colorset.land <- color.df[grepl('Land',color.df$Validation.ID),'Color']
+colorset.water <- color.df[grepl('Water',color.df$Validation.ID),'Color']
+colorset.S2.land <- color.df[grepl('Land',color.df$Validation.ID) & grepl('Sentinel-2',color.df$Sentinel),'Color']
+colorset.S2.water <- color.df[grepl('Water',color.df$Validation.ID) & grepl('Sentinel-2',color.df$Sentinel),'Color']
+colorset.S3.land <- color.df[grepl('Land',color.df$Validation.ID) & grepl('Sentinel-3',color.df$Sentinel),'Color']
+#colorset.S3.water <- color.df[grepl('Water',color.df$Validation.ID) & grepl('Sentinel-3',color.df$Sentinel),'Color']
+```
+
+# prepare common plot elements
+```{r}
+zeroline <- geom_hline(yintercept = 0, size=0.5, color='gray45')
+zerodashedline <- geom_hline(yintercept = 0, size=0.5, linetype='longdash')
+
+greyrectagle <- geom_rect(aes(xmin=-Inf,xmax=Inf,ymin=-5,ymax=5),alpha=0.1,fill='lightgray')
+
+specshlines <- geom_hline(yintercept = c(-5,0, 5), size = 0.5,linetype='longdash')
+
+theme_noxaxis <- theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.title = element_text(face='bold'),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        strip.text.x = element_text(face='bold'))
+theme_xaxis <-  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.title = element_text(face='bold'),
+        strip.text.x = element_text(face='bold'))
+
+shape.apu <- c(17,15,16)
+
+# land - water distiction
+surfaces <- c('Land', 'Water')
+
+s.box.plot.ylims <- list(scale_y_continuous(breaks=seq(0,0.7, 0.1),limits = c(0,0.625)),
+                         scale_y_continuous(breaks=seq(0,0.1, 0.02),limits = c(0,0.1)))
+b.box.plot.S2.ylims <- list(scale_y_continuous(breaks=seq(0,0.7, 0.1),limits = c(0,0.625)),
+                            scale_y_continuous(breaks=seq(0,0.1, 0.02),limits = c(0,0.08)))
+b.box.plot.S3.ylims <- list(scale_y_continuous(breaks=seq(0,0.5, 0.1),limits = c(0,0.5)),
+                            scale_y_continuous(breaks=seq(0,0.1, 0.02),limits = c(0,0.08)))
+
+s.meanSRdiff.plot.ylims <- list(scale_y_continuous(breaks=seq(-0.1,0.3, 0.1),limits = c(-0.1,0.3)),
+                                scale_y_continuous(breaks=seq(-0.01,0.03, 0.01),limits = c(-0.01,0.03)))
+b.meanSRdiff.plot.S2.ylims <- list(scale_y_continuous(breaks=seq(-0.1,0.4, 0.1),limits = c(-0.1,0.4)),
+                                   scale_y_continuous(breaks=seq(-0.01,0.07, 0.02),limits = c(-0.01,0.07)))
+b.meanSRdiff.plot.S3.ylims <- list(scale_y_continuous(breaks=seq(-0.1,0.4, 0.1),limits = c(-0.1,0.4)),
+                                   scale_y_continuous(breaks=seq(-0.01,0.07, 0.01),limits = c(-0.01,0.07)))
+  
+s.apu.plot.ylims <- list(scale_y_continuous(breaks=seq(-0.04,0.08, 0.02),limits = c(-0.025,0.08)),
+                         scale_y_continuous(breaks=seq(-0.01,0.015, 0.005),limits = c(-0.01,0.015)))
+b.apu.plot.S2.ylims <- list(scale_y_continuous(breaks=seq(-0.05,0.1, 0.05),limits = c(-0.05,0.1)),
+                            scale_y_continuous(breaks=seq(-0.02,0.025, 0.005),limits = c(-0.01,0.025)))
+b.apu.plot.S3.ylims <- list(scale_y_continuous(breaks=seq(-0.05,0.075, 0.025),limits = c(-0.05,0.075)),
+                            scale_y_continuous(breaks=seq(-0.01,0.1, 0.02),limits = c(-0.01,0.1)))
+
+s.apu.rel.plot.ylims <- list(scale_y_continuous(breaks=seq(-20, 60, 20),
+                                                limits = c(-20, 60),labels = function(x) paste0(x,'%')),
+                             scale_y_continuous(breaks=seq(-20, 140, 20),
+                                                limits = c(-10, 140),labels = function(x) paste0(x,'%')))
+b.apu.rel.plot.S2.ylims <- list(scale_y_continuous(breaks=seq(-100, 150, 100),
+                                                   limits = c(-50, 150),labels = function(x) paste0(x,'%')),
+                                scale_y_continuous(breaks=seq(-100, 400, 100),
+                                                   limits = c(-50, 400),labels = function(x) paste0(x,'%')))
+b.apu.rel.plot.S3.ylims <- list(scale_y_continuous(breaks=seq(-40, 80, 20),
+                                                   limits = c(-40, 80),labels = function(x) paste0(x,'%')),
+                                scale_y_continuous(breaks=seq(-50, 500, 50),
+                                                   limits = c(-50, 500),labels = function(x) paste0(x,'%')))
+
+colors <- list(scale_colour_manual(values = colorset.land),scale_colour_manual(values = colorset.water))
+colors.S2 <- list(scale_colour_manual(values = colorset.S2.land),scale_colour_manual(values = colorset.S2.land))
+colors.S3 <- list(scale_colour_manual(values = colorset.S3.land),scale_colour_manual(values = colorset.S3.land))
+
+fills <- list(scale_fill_manual(values = colorset.land),scale_fill_manual(values = colorset.land))
+fills.S2 <- list(scale_fill_manual(values = colorset.S2.land),scale_fill_manual(values = colorset.S2.land))
+fills.S3 <- list(scale_fill_manual(values = colorset.S3.land),scale_fill_manual(values = colorset.S3.land))
+```
+
+# plot and write to disc
+```{r}
+for(i in 1:length(surfaces)){
+# i=1
+  surface <- surfaces[i]
+
+  # subsetting data to respective surface
+  plot.data.subset.list <- lapply(plot.data.list, subset, Surface==surface)
+  data <- plot.data.subset.list[[1]]
+  data.S2 <- plot.data.subset.list[[2]]
+  data.S3 <- plot.data.subset.list[[3]]
+  scene.data <- plot.data.subset.list[[4]]
+  band.data.S2 <- plot.data.subset.list[[5]]
+  band.data.S3 <- plot.data.subset.list[[6]]
+  scene.data.m.apu <- plot.data.subset.list[[7]]
+  band.data.m.apu.S2 <- plot.data.subset.list[[8]]
+  band.data.m.apu.S3 <- plot.data.subset.list[[9]]
+  scene.data.m.apu.rel <- plot.data.subset.list[[10]]
+  band.data.m.apu.rel.S2 <- plot.data.subset.list[[11]]
+  band.data.m.apu.rel.S3 <- plot.data.subset.list[[12]]
+  scene.data.m.error <- plot.data.subset.list[[13]]
+  band.data.m.error.S2 <- plot.data.subset.list[[14]]
+  band.data.m.error.S3 <- plot.data.subset.list[[15]]
+  
+  #----------------------------------------------------------
+  #----------------------------------------------------------
+  
+  # SR Distribution plots (data)
+
+    ## scene comparison
+  s.box.plot <- ggplot(data) + 
+    zeroline +
+    geom_boxplot(aes(x=Validation.ID, y=Sentinel.Reflectance, color=Validation.ID, fill=Validation.ID),
+                 size=1, alpha=0.3, outlier.shape = NA, show.legend = FALSE)+
+    geom_boxplot(aes(x=Validation.ID, y=Reference.Reflectance),
+                 color='black', fill='transparent',
+                 size=0.5, linetype='longdash', outlier.shape = NA, show.legend = FALSE)+
+    labs(title = paste0('SR Distribution over ',surface),
+         x = element_blank(), y='Surface Reflectance',
+         color='Validation ID',fill='Validation ID')+
+    s.box.plot.ylims[[i]]+
+    theme_xaxis+
+    colors[[i]]+
+    fills[[i]]
+  s.box.plot
+  
+    ## band comparison
+  
+      ### Sentinel-2 
+  b.box.plot.S2 <- ggplot(data.S2) +
+    zeroline +
+    facet_wrap(.~Band)+
+    geom_boxplot(aes(x=Validation.ID, y=Sentinel.Reflectance, color=Validation.ID, fill=Validation.ID),
+                 size=1, alpha=0.3, outlier.shape = NA)+
+    geom_boxplot(aes(x=Validation.ID, y=Reference.Reflectance),
+                 color='black', fill='transparent',
+                 size=0.5, linetype='longdash', outlier.shape = NA, show.legend = FALSE)+
+    labs(title = paste0('SR Distribution per Band over ',surface),
+         subtitle = 'Sentinel-2 Validation',
+         x = element_blank(), y='Surface Reflectance',
+         color='Validation ID',fill='Validation ID')+
+    b.box.plot.S2.ylims[[i]]+
+    theme_noxaxis+
+    colors.S2[[i]]+
+    fills.S2[[i]]
+  b.box.plot.S2
+    
+        ### Sentinel-3
+  if(surface == 'Land'){
+    b.box.plot.S3 <- ggplot(data.S3) +
+      zeroline +
+      facet_wrap(.~Band)+
+      geom_boxplot(aes(x=Validation.ID, y=Sentinel.Reflectance, color=Validation.ID, fill=Validation.ID),
+                   size=1, alpha=0.3, outlier.shape = NA)+
+      geom_boxplot(aes(x=Validation.ID, y=Reference.Reflectance), color='black', fill='transparent',
+                   size=0.5, linetype='longdash', outlier.shape = NA, show.legend = FALSE)+
+      labs(title = paste0('SR Distribution per Band over ',surface),
+           subtitle = 'Sentinel-3 Validation',
+           x = element_blank(), y='Surface Reflectance',
+           color='Validation ID',fill='Validation ID')+
+      b.box.plot.S3.ylims[[i]]+
+      theme_noxaxis+
+      colors.S3[[i]]+
+      fills.S3[[i]]
+    b.box.plot.S3
+  }
+  
+#----------------------------------------------------------
+  
+  # SR Mean/Difference plots (scene.data/band.data)
+
+    ## scene comparison 
+  s.meanSRdiff.plot <- ggplot(scene.data) +
+    zerodashedline+
+    geom_point(aes(x=Validation.ID, y=Difference.Scene),
+              color = 'black', shape = 17, size=2)+
+    geom_point(aes(x=Validation.ID, y=Reference.Reflectance.Scene),
+               size=3.5, color='black', shape=1)+
+    geom_point(aes(x=Validation.ID, y=Sentinel.Reflectance.Scene, color=Validation.ID),
+               size=3, shape=19, show.legend = FALSE)+
+    labs(title = paste0('Mean Surface Reflectance over ',surface),
+         x = element_blank(), y='Surface Reflectance',
+         color='Validation ID')+
+    s.meanSRdiff.plot.ylims[[i]]+
+    theme_xaxis+
+    colors[[i]]
+  s.meanSRdiff.plot
+  
+  
+    ## band comparison
+    
+      ### Sentinel-2 
+  b.meanSRdiff.plot.S2 <- ggplot(band.data.S2) +
+    zerodashedline+
+    facet_wrap(.~Band)+
+    geom_point(aes(x=Validation.ID, y=Difference.Band),
+              color = 'black', shape = 17, size=2)+
+    geom_point(aes(x=Validation.ID, y=Reference.Reflectance.Band), size=3.5, color='black', shape=1)+
+    geom_point(aes(x=Validation.ID, y=Sentinel.Reflectance.Band, color=Validation.ID), size=3, shape=19)+
+    labs(title = paste0('Mean SR per Band over ',surface),
+         subtitle = 'Sentinel-2 Validation',
+         x = element_blank(), y='Surface Reflectance',
+         color='Validation ID')+
+    b.meanSRdiff.plot.S2.ylims[[i]]+
+    theme_noxaxis+
+    colors.S2[[i]]
+  b.meanSRdiff.plot.S2
+   
+      ### Sentinel-3
+  if(surface == 'Land'){
+    b.meanSRdiff.plot.S3 <- ggplot(band.data.S3) +
+      zerodashedline+
+      facet_wrap(.~Band)+
+      geom_point(aes(x=Validation.ID, y=Difference.Band),
+              color = 'black', shape = 17, size=2)+
+      geom_point(aes(x=Validation.ID, y=Reference.Reflectance.Band), size=3.5, color='black', shape=1)+
+      geom_point(aes(x=Validation.ID, y=Sentinel.Reflectance.Band, color=Validation.ID), size=3, shape=19)+
+      labs(title = paste0('Mean SR per Band over ',surface),
+           subtitle = 'Sentinel-3 Validation',
+           x = element_blank(), y='Surface Reflectance',
+           color='Validation ID')+
+      b.meanSRdiff.plot.S3.ylims[[i]]+
+      theme_noxaxis+
+      colors.S3[[i]]
+    b.meanSRdiff.plot.S3
+  }
+  
+#----------------------------------------------------------
+  
+  # APU plots (scene.data/band.data)
+
+    ## scene comparison
+    
+  s.apu.plot <- ggplot(scene.data.m.apu, aes(x = Validation.ID,y=value)) +
+    zeroline+
+    facet_wrap(~variable,
+               labeller = labeller(variable = c(A.Scene='Accuracy Value\nA',
+                                                P.Scene='Precision Value\nP',
+                                                U.Scene='Uncertainty Value\nU'))) +
+    geom_point(aes(color=Validation.ID, shape=variable),size=3, show.legend = FALSE)+
+    geom_errorbar(aes(ymin = -Specs.Scene, ymax = Specs.Scene), width = 0.2, linetype='longdash') +
+    labs(title = paste0('Mean APU Values over ',surface),
+         x = element_blank(), y = 'Mean APU Value',
+         color='Validation ID')+
+    s.apu.plot.ylims[[i]]+
+    scale_shape_manual(values= shape.apu)+
+    guides(shape=FALSE)+
+    theme_xaxis+
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1))+ 
+    colors[[i]]
+  s.apu.plot
+  
+    ## band comparison
+  
+      ### Sentinel-2 
+  b.apu.plot.S2 <- ggplot(band.data.m.apu.S2) +
+    zeroline+
+    facet_wrap(.~Band)+
+    geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+               size=3, alpha=0.5)+
+    geom_errorbar(aes(x=Validation.ID,ymin = -Specs, ymax = Specs),
+                  width = 0.1, linetype='longdash') +
+    labs(title = paste0('APU Values per Band over ',surface),
+         subtitle = 'Sentinel-2 Validation',
+         x = element_blank(), y='APU Value',
+         color='Validation ID',
+         shape='Measure')+
+    b.apu.plot.S2.ylims[[i]]+
+    scale_shape_manual(values= shape.apu,
+                       labels=c('Accuracy Value','Precision Value', 'Uncertainty Value'))+
+    theme_noxaxis+
+    colors.S2[[i]]
+  b.apu.plot.S2
+  
+      ### Sentinel-3
+  if(surface == 'Land'){
+    b.apu.plot.S3 <- ggplot(band.data.m.apu.S3) +
+      zeroline+
+      facet_wrap(.~Band)+
+      geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+                 size=3, alpha=0.5)+
+      geom_errorbar(aes(x=Validation.ID,ymin = -Specs, ymax = Specs),
+                    width = 0.1, linetype='longdash') +
+      labs(title = paste0('APU Values per Band over ',surface),
+           subtitle = 'Sentinel-3 Validation',
+           x = element_blank(), y='APU Value',
+           color='Validation ID',
+           shape='Measure')+
+      b.apu.plot.S3.ylims[[i]]+
+      scale_shape_manual(values=c(17,15,16),
+                         labels=c('Accuracy Value','Precision Value', 'Uncertainty Value'))+
+      theme_noxaxis+
+      colors.S3[[i]]
+    b.apu.plot.S3
+  }
+  
+#----------------------------------------------------------  
+  # rel. APU plots (scene.data/band.data)
+
+    ## scene comparison
+
+  s.apu.rel.plot <-  ggplot(data=scene.data.m.apu.rel, aes(x=Validation.ID, y=value)) +
+    greyrectagle+
+    zeroline+
+    specshlines+
+    facet_wrap(~variable,
+               labeller = labeller(variable =  c(`Rel.A.Scene`='Relative Accuracy Value\nA',
+                                                 `Rel.P.Scene`='Relative Precision Value\nP',
+                                                 `Rel.U.Scene`='Relative Uncertainty Value\nU'))) +
+    
+    geom_point(aes(color=Validation.ID, shape=variable),size=3, show.legend = FALSE)+
+    labs(title = paste0('Mean Relative APU Values over ',surface),
+         x = element_blank(), y = 'APU Value / Mean Reference SR',
+         color='Validation ID')+
+    s.apu.rel.plot.ylims[[i]] +
+    scale_shape_manual(values= shape.apu)+
+    guides(shape=FALSE)+
+    theme_xaxis+
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1))+ 
+    colors[[i]]
+  s.apu.rel.plot
+  
+    ## band comparison
+  
+      ### Sentinel-2 
+  b.apu.rel.plot.S2 <- ggplot(band.data.m.apu.rel.S2) +
+    greyrectagle+
+    zeroline+
+    specshlines+
+    geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+               size=3, alpha=0.5)+
+    facet_wrap(.~Band)+
+    labs(title = paste0('Relative APU Values per Band over ',surface),
+         subtitle = 'Sentinel-2 Validation',
+         x = element_blank(), y='APU Value / Reference SR',
+         color='Validation ID',
+         shape='Measure')+
+    b.apu.rel.plot.S2.ylims[[i]]+
+    scale_shape_manual(values=c(17,15,16),
+                       labels=c('Relative Accuracy Value','Relative Precision Value', 'Relative Uncertainty Value'))+
+    theme_noxaxis+
+    colors.S2[[i]]
+  b.apu.rel.plot.S2
+      
+      ### Sentinel-3
+  if(surface == 'Land'){
+    b.apu.rel.plot.S3 <- ggplot(band.data.m.apu.rel.S3) +
+      greyrectagle+
+      zeroline+
+      specshlines+
+      geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+                 size=3, alpha=0.5)+
+      facet_wrap(.~Band)+
+      labs(title = paste0('Relative APU Values per Band over ',surface),
+           subtitle = 'Sentinel-3 Validation',
+           x = element_blank(), y='APU Value / Reference SR',
+           color='Validation ID',
+           shape='Measure')+
+      b.apu.rel.plot.S3.ylims[[i]]+
+      scale_shape_manual(values=c(17,15,16),
+                         labels=c('Relative Accuracy Value','Relative Precision Value', 'Relative Uncertainty Value'))+
+      theme_noxaxis+
+      colors.S3[[i]]
+    b.apu.rel.plot.S3
+  }
+  
+#----------------------------------------------------------
+
+  # RMSE/R2 plots (scene.data/band.data)
+
+    ## scene comparison 
+  s.error.plot <- ggplot(scene.data.m.error, aes(x = Validation.ID,y=value)) +
+    facet_wrap(~variable,
+               labeller = labeller(variable =  c(`RMSE.Scene`='Root Mean Square Error\nRMSE',
+                                                 `R2.Scene`='Coefficient of Determination\nR2'))) +
+    geom_bar(aes(fill = Validation.ID),stat='identity',position=position_dodge(), show.legend = FALSE) +
+    geom_bar(aes(y=ideal),stat='identity',position=position_dodge(), show.legend = FALSE,
+             color='black',fill = 'transparent', size=0.5,linetype='longdash') +
+    geom_text(aes(label=Validation.ID), vjust=0, color='black',size=3.1,angle = 90,
+              hjust = -0.05)+ # only relative hjust possible
+    labs(title = paste0('Mean Error Measures over ',surface), x = element_blank(), y = element_blank())+
+    scale_y_continuous(breaks=seq(0, 1, 0.1),limits = c(0,1))+
+    theme_noxaxis+
+    fills[[i]]
+  s.error.plot
+  
+  
+    ## band comparison
+  
+      ### Sentinel-2 
+  b.error.plot.S2 <- ggplot(band.data.m.error.S2, aes(x = variable))+
+    facet_wrap(~Band) +
+    geom_bar(aes(y = value,
+                 fill = Validation.ID),
+             stat='identity',position=position_dodge()) +
+    geom_bar(aes(y = ideal),
+             stat='identity',position=position_dodge(), show.legend = FALSE,
+             color='black',fill = 'transparent', size=0.1,linetype='longdash') +
+    labs(title = paste0('Error Measures per Band over ',surface),
+         subtitle = 'Sentinel-2 Validation',
+         x = element_blank(), y = element_blank(),
+         fill = 'Validation ID')+
+    scale_x_discrete(labels = c('RMSE','R2'))+
+    scale_y_continuous(breaks=seq(0, 1, 0.2),limits = c(0,1))+
+    theme_xaxis+
+    fills.S2[[i]]
+  b.error.plot.S2
+  
+      ### Sentinel-3
+  if(surface == 'Land'){
+    b.error.plot.S3 <- ggplot(band.data.m.error.S3, aes(x = variable))+
+      facet_wrap(~Band) +
+      geom_bar(aes(y = value,
+                   fill = Validation.ID),
+               stat='identity',position=position_dodge()) +
+      geom_bar(aes(y = ideal),
+               stat='identity',position=position_dodge(), show.legend = FALSE,
+               color='black',fill = 'transparent', size=0.1,linetype='longdash') +
+      labs(title = paste0('Error Measures per Band over ',surface),
+           subtitle = 'Sentinel-3 Validation',
+           x = element_blank(), y = element_blank(),
+           fill = 'Validation ID')+
+      scale_x_discrete(labels = c('RMSE','R2'))+
+      scale_y_continuous(breaks=seq(0, 1, 0.2),limits = c(0,1))+
+      theme_xaxis+
+      fills.S3[[i]]
+    b.error.plot.S3
+  }
+#----------------------------------------------------------
+  
+  # write plots to disc
+  
+    ## SR distribution
+  ggsave(file=paste0('SR_Distribution_Plot_Scenes_',surface,'.png'),#says rows missing, but are only outliers
+           plot=s.box.plot,width=10, height=5, dpi = 300)
+  
+  ggsave(file=paste0('SR_Distribution_Plot_S2Bands_',surface,'.png'),
+           plot=b.box.plot.S2,width=12, height=6, dpi = 300)
+  
+  if(surface == 'Land'){
+     ggsave(file=paste0('SR_Distribution_Plot_S3Bands_',surface,'.png'),
+           plot=b.box.plot.S3,width=12, height=7, dpi = 300)
+  }
+  
+    ## SR mean/difference
+  ggsave(file=paste0('SR_Mean_and_Difference_Plot_Scenes_',surface,'.png'),
+           plot=s.meanSRdiff.plot,width=10, height=5, dpi = 300)
+  
+  ggsave(file=paste0('SR_Mean_and_Difference_Plot_S2Bands_',surface,'.png'),
+           plot=b.meanSRdiff.plot.S2,width=12, height=6, dpi = 300)
+  
+  if(surface == 'Land'){
+    ggsave(file=paste0('SR_Mean_and_Difference_Plot_S3Bands_',surface,'.png'),
+           plot=b.meanSRdiff.plot.S3,width=12, height=7, dpi = 300)
+  }
+  
+  
+    ## APU/rel. APU
+  ggsave(file=paste0('APU_Plot_Scenes_',surface,'.png'),
+           plot=s.apu.plot,width=10, height=5, dpi = 300)
+  
+  ggsave(file=paste0('Relative_APU_Plot_Scenes_',surface,'.png'),
+           plot=s.apu.rel.plot,width=10, height=5, dpi = 300)
+  
+  ggsave(file=paste0('APU_Plot_S2Bands_',surface,'.png'),
+           plot=b.apu.plot.S2,width=12, height=6, dpi = 300)
+  
+  if(surface == 'Land'){
+    ggsave(file=paste0('APU_Plot_S3Bands_',surface,'.png'),
+           plot=b.apu.plot.S3,width=12, height=7, dpi = 300)
+  }
+  
+  ggsave(file=paste0('Relative_APU_Plot_S2Bands_',surface,'.png'),
+           plot=b.apu.rel.plot.S2,width=12, height=6, dpi = 300)
+  
+  if(surface == 'Land'){
+    ggsave(file=paste0('Relative_APU_Plot_S3Bands_',surface,'.png'),
+           plot=b.apu.rel.plot.S3,width=12, height=7, dpi = 300)
+  }
+  
+    ## RMSE/R2
+  ggsave(file=paste0('Error_Plot_Scenes_',surface,'.png'),
+           plot=s.error.plot,width=10, height=5, dpi = 300)
+  
+  ggsave(file=paste0('Error_Plot_S2Bands_',surface,'.png'),
+           plot=b.error.plot.S2,width=12, height=6, dpi = 300)
+  
+  if(surface == 'Land'){
+    ggsave(file=paste0('Error_Plot_S3Bands_',surface,'.png'),
+           plot=b.error.plot.S3,width=12, height=7, dpi = 300)
+  }
+  
+}
+```
+
+```{r}
+```

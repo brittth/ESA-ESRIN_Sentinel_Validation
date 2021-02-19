@@ -1,0 +1,272 @@
+---
+title: 'Custom_Plots'
+author: 'Britta Themann'
+date: '16 February 2021'
+output: html_document
+editor_options: 
+chunk_output_type: console
+---
+# settings (ADJUST THEM!)
+```{r}
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# Sentinel-3 SR comparison
+```{r}
+# install.packages('reshape')
+# install.packages('ggplot2')
+library(reshape)
+library(ggplot2)
+
+# load data
+data.syn <- read.csv('G_Land/G_Land_comparison_data.csv')
+data.icor <- read.csv('H_Land/H_Land_comparison_data.csv')
+
+# get meta data
+surface <- data.syn$Surface[1]
+val.id <- paste(data.syn$Validation.ID[1],'&',data.icor$Validation.ID[1])
+site <- data.syn$Site[1]
+sen.scene <- paste0(data.syn$Sentinel.Scene[1],'\n',data.icor$Sentinel.Scene[1])
+sen.date <- data.syn$Sentinel.Acq.Date[1]
+sen.time <- data.syn$Sentinel.Acq.Time[1]
+ref.scene <- data.syn$Reference.Scene[1]
+ref.date <- data.syn$Reference.Acq.Date[1]
+ref.time <- data.syn$Reference.Acq.Time[1]
+ref.sensor <- as.character(data.syn$Reference.Sensor[1])
+syn.product <- as.character(data.syn$Sentinel.Product[1])
+icor.product <- as.character(data.icor$Sentinel.Product[1])
+# if(sen.product == 'MSI L2A'){sen.sensor <- 'MSI'}else{sen.sensor <- 'OLCI'}
+
+# subset data
+data.syn <- unique(subset(data.syn, select = c('Band','Wavelength',
+                                        'Reference.Reflectance.Band','Sentinel.Reflectance.Band','Difference.Band')))
+data.icor <- unique(subset(data.icor, select = c('Band','Wavelength',
+                                          'Reference.Reflectance.Band','Sentinel.Reflectance.Band','Difference.Band')))
+
+# create plot data
+data <- data.syn
+data$Reference.Reflectance.iCOR <- data.icor$Reference.Reflectance.Band
+data$Sentinel.Reflectance.iCOR <- data.icor$Sentinel.Reflectance.Band
+data$Difference.iCOR <- data.icor$Difference.Band
+data$Label <- c('B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','B12','B16','B17','B18','B21')
+data <- melt(data, id=c('Band','Wavelength','Label'))
+data <- data[!(data$variable %in% 'Reference.Reflectance.iCOR'),] # only one HyPlant set needed (checked, both reference datasets match visually)
+
+
+# plot
+line.plot <- ggplot(data=data,aes(x=Wavelength, y=value, color=variable)) +
+  geom_hline(yintercept = 0, size=0.5, color='gray45')+
+  geom_vline(xintercept = c(data$Wavelength), color='grey',size=0.5, linetype='dashed')+
+  geom_line(size=1)+
+  geom_point(size=3)+
+  geom_text(aes(label=ifelse(variable=='Difference.Band', Label,'')),hjust=0, vjust=-1, size=3)+
+  ylim(-0.05,0.4)+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+        legend.title = element_text())+
+  labs(title = paste0('Mean Surface Reflectance\n',val.id) ,
+       subtitle=paste0('Site: ',site,
+                       '\nSentinel Scene:\n',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'),
+       x = 'Wavelength [nm]',y = 'Surface Reflectance')+
+  scale_color_manual(values = c('darkgreen','red','black','darkred','darkgrey'),
+                     name = 'Product',
+                     labels = c(ref.sensor, 
+                                syn.product, paste(syn.product,'Difference'),
+                                icor.product, paste(icor.product,'Difference')))
+line.plot
+
+# write to disc
+ggsave(file='Custom_Plot_IT_S3_line_plot.png', plot=line.plot, width=13, height=6, dpi=300)
+```
+
+# Cross Validation - Relative APU Plot with logarithmic scale (does not work with negative values)
+```{r}
+# # install.packages('reshape')
+# # install.packages('ggplot2')
+# library(reshape)
+# library(ggplot2)
+# 
+# # set working directory
+# setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+# 
+# # load meta data
+# meta <- read.csv('Metadata.csv')
+# 
+# # load data
+# scene.data <- read.csv('Summary_Scenes.csv')
+# band.data <- read.csv('Summary_Bands.csv')
+# 
+# # scene comparison plots
+# scene.data.m <- melt(scene.data, id.vars = colnames(scene.data[,1:14]))
+# scene.data.m$value <- as.numeric(scene.data.m$value)
+# scene.data.m.apu.rel <- scene.data.m[scene.data.m$variable %in% 'Rel.A.Scene' |
+#                       scene.data.m$variable %in% 'Rel.P.Scene' |
+#                       scene.data.m$variable %in% 'Rel.U.Scene',]
+# 
+# # band comparison plots
+#   # subsetting S2 and S3 data 
+# # band.data.S2 <- band.data[grepl('Sentinel-2',band.data$Sentinel),]
+# # band.data.S3 <-band.data[grepl('Sentinel-3',band.data$Sentinel),]
+# band.data.m <- melt(band.data, id.vars = colnames(band.data[,c(1:14)]))
+# band.data.m$value <- as.numeric(band.data.m$value)
+# band.data.m.apu.rel <- band.data.m[band.data.m$variable %in% 'Rel.A' |
+#                       band.data.m$variable %in% 'Rel.P' |
+#                       band.data.m$variable %in% 'Rel.U',]
+# band.data.m.apu.rel.S2  <- band.data.m.apu.rel[grepl('Sentinel-2',band.data.m.apu.rel$Sentinel),]
+# band.data.m.apu.rel.S3  <- band.data.m.apu.rel[grepl('Sentinel-3',band.data.m.apu.rel$Sentinel),]
+# 
+# # correct band order
+# # setting band order
+# S2bands <- c('Band1','Band2','Band3','Band4','Band5','Band6',
+#                   'Band7','Band8','Band8A','Band9','Band11','Band12')
+# S3bands <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7',
+#                   'Band8','Band9','Band10','Band11','Band12','Band16','Band17','Band18','Band21')
+# band.data.m.apu.rel.S2$Band <- factor(band.data.m.apu.rel.S2$Band, levels= S2bands)
+# band.data.m.apu.rel.S3$Band  <- factor(band.data.m.apu.rel.S3$Band, levels= S3bands)
+# 
+# # prepare plot storage
+# plot.data.list <- list(scene.data.m.apu.rel,band.data.m.apu.rel.S2,band.data.m.apu.rel.S3)
+# 
+# # get colorsets
+# color.df <- data.frame('Validation.ID' = unique(scene.data$Validation.ID), 'Color'= NA)
+# for(val.id in meta$Validation.ID){
+#   color.df[grepl(val.id,color.df$Validation.ID),'Color'] <- as.character(meta[meta$Validation.ID %in% val.id,'Color'])
+# }
+# colorset.land <- color.df[grepl('Land',color.df$Validation.ID),'Color']
+# colorset.water <- color.df[grepl('Water',color.df$Validation.ID),'Color']
+# colorset.S2.land <- color.df[grepl('  S2',color.df$Validation.ID) & grepl('Land',color.df$Validation.ID),'Color']
+# colorset.S2.water <- color.df[grepl('  S2',color.df$Validation.ID) & grepl('Water',color.df$Validation.ID),'Color']
+# colorset.S3.land <- color.df[grepl('  S3',color.df$Validation.ID) & grepl('Land',color.df$Validation.ID),'Color']
+# colorset.S2.water <- color.df[grepl('  S3',color.df$Validation.ID) & grepl('Water',color.df$Validation.ID),'Color']
+# 
+# # prepare common plot elements
+# zeroline <- geom_hline(yintercept = 0, size=0.5, color='gray45')
+# greyrectagle <- geom_rect(aes(xmin=-Inf,xmax=Inf,ymin=-5,ymax=5),alpha=0.1,fill='lightgray')
+# specshlines <- geom_hline(yintercept = c(-5,0, 5), size = 0.5,linetype='longdash')
+# theme_noxaxis <- theme_bw()+
+#   theme(plot.title = element_text(size=14, face='bold',hjust = 0.5),
+#         plot.subtitle = element_text(hjust = 0.5),
+#         legend.title = element_text(face='bold'),
+#         axis.text.x=element_blank(),
+#         axis.ticks.x=element_blank(),
+#         strip.text.x = element_text(face='bold'))
+# shape.apu <- c(17,15,16)
+# 
+# # land - water distiction
+# surfaces <- c('Land', 'Water')
+# s.apu.rel.plot.ylims <- list(scale_y_log10(breaks=seq(-20, 140, 20),
+#                                                 limits = c(-20, 140),labels = function(x) paste0(x,'%')),
+#                              scale_y_log10(breaks=seq(-20, 140, 20),
+#                                                 limits = c(-10, 140),labels = function(x) paste0(x,'%')))
+# b.apu.rel.plot.S2.ylims <- list(scale_y_log10(breaks=seq(-100, 400, 100),
+#                                                    limits = c(-50, 400),labels = function(x) paste0(x,'%')),
+#                                 scale_y_log10(breaks=seq(-100, 400, 100),
+#                                                    limits = c(-50, 400),labels = function(x) paste0(x,'%')))
+# b.apu.rel.plot.S3.ylims <- list(scale_y_log10(breaks=seq(-40, 80, 20),
+#                                                    limits = c(-40, 80),labels = function(x) paste0(x,'%')),
+#                                 scale_y_log10(breaks=seq(-50, 500, 50),
+#                                                    limits = c(-50, 500),labels = function(x) paste0(x,'%')))
+# 
+# colors <- list(scale_colour_manual(values = colorset.land),scale_colour_manual(values = colorset.water))
+# colors.S2 <- list(scale_colour_manual(values = colorset.S2.land),scale_colour_manual(values = colorset.S2.land))
+# colors.S3 <- list(scale_colour_manual(values = colorset.S3.land),scale_colour_manual(values = colorset.S3.land))
+# 
+# fills <- list(scale_fill_manual(values = colorset.land),scale_fill_manual(values = colorset.land))
+# fills.S2 <- list(scale_fill_manual(values = colorset.S2.land),scale_fill_manual(values = colorset.S2.land))
+# fills.S3 <- list(scale_fill_manual(values = colorset.S3.land),scale_fill_manual(values = colorset.S3.land))
+# 
+# # plot
+# for(i in 1:length(surfaces)){
+# # i=1
+#   surface <- surfaces[i]
+# 
+#   # subsetting data to respective surface
+#   plot.data.subset.list <- lapply(plot.data.list, subset, Surface==surface)
+#   scene.data.m.apu.rel <- plot.data.subset.list[[1]]
+#   band.data.m.apu.rel.S2 <- plot.data.subset.list[[2]]
+#   band.data.m.apu.rel.S3 <- plot.data.subset.list[[3]]
+# 
+#   #----------------------------------------------------------
+#   # rel. APU plots (scene.data/band.data)
+# 
+#     ## scene comparison
+# 
+#   s.apu.rel.plot <-  ggplot(data=scene.data.m.apu.rel, aes(x=Validation.ID, y=value)) +
+#     greyrectagle+
+#     zeroline+
+#     specshlines+
+#     facet_wrap(~variable,
+#                labeller = labeller(variable =  c(`Rel.A.Scene`='Relative Accuracy Value\nA',
+#                                                  `Rel.P.Scene`='Relative Precision Value\nP',
+#                                                  `Rel.U.Scene`='Relative Uncertainty Value\nU'))) +
+#     geom_point(aes(color=Validation.ID, shape=variable),size=3)+
+#     labs(title = paste0('Mean Relative APU Values over ',surface),
+#          x = element_blank(), y = 'APU Value / Mean Reference SR',
+#          color='Validation ID') +
+#     s.apu.rel.plot.ylims[[i]] +
+#     scale_shape_manual(values= shape.apu)+
+#     guides(shape=FALSE)+
+#     theme_noxaxis+
+#     colors[[i]]
+#   s.apu.rel.plot
+#   
+#     ## band comparison
+#   
+#       ### Sentinel-2 
+#   b.apu.rel.plot.S2 <- ggplot(band.data.m.apu.rel.S2) +
+#     greyrectagle+
+#     zeroline+
+#     specshlines+
+#     geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+#                size=3, alpha=0.5)+
+#     facet_wrap(.~Band)+
+#     labs(title = paste0('Relative APU Values per Band over ',surface),
+#          subtitle = 'Sentinel-2 Validation',
+#          x = element_blank(), y='APU Value / Reference SR',
+#          color='Validation ID',
+#          shape='Measure')+
+#     b.apu.rel.plot.S2.ylims[[i]]+
+#     scale_shape_manual(values=c(17,15,16),
+#                        labels=c('Relative Accuracy Value','Relative Precision Value', 'Relative Uncertainty Value'))+
+#     theme_noxaxis+
+#     colors.S2[[i]]
+#   b.apu.rel.plot.S2
+#       
+#       ### Sentinel-3
+#   if(surface == 'Land'){
+#     b.apu.rel.plot.S3 <- ggplot(band.data.m.apu.rel.S3) +
+#       greyrectagle+
+#       zeroline+
+#       specshlines+
+#       geom_point(aes(x=Validation.ID, y=value, color=Validation.ID, shape=variable),
+#                  size=3, alpha=0.5)+
+#       facet_wrap(.~Band)+
+#       labs(title = paste0('Relative APU Values per Band over ',surface),
+#            subtitle = 'Sentinel-3 Validation',
+#            x = element_blank(), y='APU Value / Reference SR',
+#            color='Validation ID',
+#            shape='Measure')+
+#       b.apu.rel.plot.S3.ylims[[i]]+
+#       scale_shape_manual(values=c(17,15,16),
+#                          labels=c('Relative Accuracy Value','Relative Precision Value', 'Relative Uncertainty Value'))+
+#       theme_noxaxis+
+#       colors.S3[[i]]
+#     b.apu.rel.plot.S3
+#   }
+#   #----------------------------------------------------------
+#   
+#   # write to disc
+#   ggsave(file=paste0('Custom_Plot_LogScale_Relative_APU_Plot_Scenes_',surface,'.png'),
+#            plot=s.apu.rel.plot,width=10, height=5, dpi = 300)
+#   ggsave(file=paste0('Custom_Plot_LogScale_Relative_APU_Plot_S2Bands_',surface,'.png'),
+#            plot=b.apu.rel.plot.S2,width=12, height=6, dpi = 300)
+#   
+#   if(surface == 'Land'){
+#     ggsave(file=paste0('Custom_Plot_LogScale_Relative_APU_Plot_S3Bands_',surface,'.png'),
+#            plot=b.apu.rel.plot.S3,width=12, height=7, dpi = 300)
+#   }
+# }
+```
