@@ -1,0 +1,12 @@
+20180624-MAJ-1015-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180624-MAJ-1015-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
+20180624-S3ESP-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180624-S3ESP-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
+20180710-S3FR-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180710-S3FR-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
+20180713-GRE-1046-1800-L1-N-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180713-GRE-1046-1800-L1-N-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
+20180713-S3SWI-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180713-S3SWI-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
+20180730-S3IT-1135-1149-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.bsq
+20180730-S3IT-1135-1149-3050-MOSAIC-DUAL_radiance_img_atm_pol_smcorr-rect.hdr
