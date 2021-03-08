@@ -325,7 +325,7 @@ H.TCI.plot <- ggRGB(H,r=red.H, g=green.H, b=blue.H, stretch='hist', maxpixels = 
 coverage.plot <- ggplot()+
   theme_light()+
   theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))+
-  labs(title = 'Coverage',x = 'Longitude [°]', y = 'Latitude [°]')+
+  labs(title = 'Coverage',x = 'Longitude [°E]', y = 'Latitude [°N]')+
   geom_path(aes(x = long, y = lat), data = S.proj.outline,size=1, col='red')+
   annotate('text',col='red', label = paste(S.area,'km2'),x = mean.x,y = mean.y, fontface ='bold')+
   annotate('text',col='red', label = paste(S.xdim,'km'),x = mean.x,y = ymin(S.proj)+y.offset)+

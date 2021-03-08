@@ -15,7 +15,7 @@ editor_options:
 # val.id <- 'E Land'
 # val.id <- 'F Land'
 # val.id <- 'G Land'
-val.id <- 'H Land'
+# val.id <- 'H Land'
 
 # set working directory
 setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
