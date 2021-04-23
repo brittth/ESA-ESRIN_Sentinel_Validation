@@ -1,0 +1,479 @@
+---
+title: 'Comparison'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# settings (ADJUST THEM!)
+```{r}
+# val.id <- 'A'
+# surface <- 'Land'
+# surface <- 'Water'
+
+# val.id <- 'B'
+# surface <- 'Land'
+
+# val.id <- 'C'
+# surface <- 'Land'
+
+# val.id <- 'D'
+# surface <- 'Land'
+
+# val.id <- 'E'
+# surface <- 'Land'
+
+# val.id <- 'F'
+# surface <- 'Land'
+
+# val.id <- 'G'
+# surface <- 'Land'
+
+# val.id <- 'H'
+# surface <- 'Land'
+
+# set working directory
+setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+```
+
+# load packages
+```{r}
+# install.packages('raster')
+# install.packages('stringr')
+# install.packages('reshape')
+# install.packages('ggplot2')
+# install.packages('gridExtra')
+# install.packages('grid')
+library(raster)
+library(stringr)
+library(reshape)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+```
+
+# load data
+```{r}
+# load meta data
+meta <- read.csv('Metadata.csv')
+
+# subset meta to relevant dataset by Validation ID
+meta <- meta[meta$Validation.ID %in% val.id,]
+
+# get val.id name for inputs and outputs
+val.id <- paste0(val.id,' ',surface)
+val.id.file <- chartr(' ', '_', val.id)
+
+# reference data file (later combined with resolution number)
+ref.file <- paste0(val.id.file,'_reference')
+
+# data to be validated (later combined with resolution number)
+S.file <- paste0(val.id.file,'_sentinel')
+
+# get short names for meta data
+site <- as.character(meta$Site)
+ref.scene <- as.character(meta$Reference.Scene)
+ref.sensor <- as.character(meta$Reference.Sensor)
+ref.date <- as.character(meta$Reference.Acq.Date)
+ref.time <- as.character(meta$Reference.Acq.Time)
+sen.scene <- as.character(meta$Sentinel.Scene)
+sentinel <- as.character(meta$Sentinel)
+sen.product <- as.character(meta$Sentinel.Product)
+sen.date <- as.character(meta$Sentinel.Acq.Date)
+sen.time <- as.character(meta$Sentinel.Acq.Time)
+if(sen.product == 'MSI L2A'){sen.sensor <- 'MSI'}else{sen.sensor <- 'OLCI'} 
+
+# prepare data table with relevant meta data
+meta.df <- data.frame('Validation.ID'= val.id,
+                      'Site' = site,
+                      'Surface' = surface,
+                      'Reference.Scene'= ref.scene,
+                      'Reference.Sensor'= ref.sensor,
+                      'Reference.Acq.Date' = ref.date,
+                      'Reference.Acq.Time' = ref.time,
+                      'Sentinel.Scene'= sen.scene,
+                      'Sentinel'= sentinel,
+                      'Sentinel.Product'= sen.product,
+                      'Sentinel.Acq.Date' = sen.date,
+                      'Sentinel.Acq.Time' = sen.time,
+                      'Observations.Band'=NA,
+                      'Observations.Scene'=NA,
+                      'Area.km2.Band'=NA,
+                      'Area.km2.Scene'=NA)
+
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
+  # load reference data
+  H <- list(brick(paste0(val.id.file,'/',ref.file,'10.tif')),
+            brick(paste0(val.id.file,'/',ref.file,'20.tif')),
+            brick(paste0(val.id.file,'/',ref.file,'60.tif')))
+
+  # load Sentinel data
+  S <- list(brick(paste0(val.id.file,'/',S.file,'10.tif')),
+            brick(paste0(val.id.file,'/',S.file,'20.tif')),
+            brick(paste0(val.id.file,'/',S.file,'60.tif')))
+  
+  # bandnames per resolution
+  bandnames10 <- c('Band2','Band3','Band4','Band8')
+  bandnames20 <- c('Band5','Band6','Band7','Band8A','Band11','Band12')
+  bandnames60 <- c('Band1','Band9')
+  bandnames <- list(bandnames10,bandnames20,bandnames60)
+  all.bandnames <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band8A','Band9','Band11','Band12')
+  
+  # wavelengths per resolution
+  if(meta$Sentinel == 'Sentinel-2A'){
+    wavelengths10 <- c(492.4,559.8,664.6,832.8) #S2A
+    wavelengths20 <- c(704.1,740.5,782.8,864.7,1613.7,2202.4) #S2A
+    wavelengths60 <- c(442.7,945.1) #S2A
+    all.wavelengths<- c(442.7,492.4,559.8,664.6,704.1,740.5,782.8,832.8,864.7,945.1,1613.7,2202.4) #S2A
+  }else{ #Sentinel-2B
+    wavelengths10 <- c(492.1,559.0,665.0,833.0) #S2B
+    wavelengths20 <- c(703.8,739.1,779.7,864.0,1610.4,2185.7) #S2B
+    wavelengths60 <- c(442.3,943.2) #S2B
+    all.wavelengths <- c(442.3,492.1,559.0,665.0,703.8,739.1,779.7,833.0,864.0,943.2,1610.4,2185.7) #S2B
+  }
+  wavelengths <- list(wavelengths10,wavelengths20,wavelengths60)
+
+  # resolutions
+  res <- c(10,20,60)
+  
+}else{ # Sentinel-3A/B
+
+  # load reference data
+  H <- list(brick(paste0(val.id.file,'/',ref.file,'300.tif')))
+  
+  # load Sentinel data
+  S <- list(brick(paste0(val.id.file,'/',S.file,'300.tif')))
+  
+  # bandnames
+  all.bandnames <- c('Band1','Band2','Band3','Band4','Band5','Band6','Band7','Band8','Band9','Band10',
+                      'Band11','Band12','Band16','Band17','Band18','Band21')
+  bandnames <- list(all.bandnames)
+  
+  # wavelengths per resolution
+  if(meta$Sentinel == 'Sentinel-3A'){
+    all.wavelengths<- c(400,412.5,442.5,490,510,560,620,665,673.75,681.25,708.75,753.75,778.75,865,885,1020)
+    # wavelengths<- c(400,412.5,442.5,490,510,560,620,665,673.75,681.25,708.75,753.75,
+    # 761.25,764.375,767.5,778.75,865,885,900,940,1020) #S3A all bands
+  }else{ #Sentinel-3B
+    all.wavelengths<- c(400,412.5,442.5,490,510,560,620,665,673.75,681.25,708.75,753.75,778.75,865,885,1020)
+    #TO BE UPDATED. no info online on difference between A and B
+  }
+  wavelengths <- list(all.wavelengths)
+  
+  # resolutions
+  res <- c(300)
+}
+```
+
+# create comparison raster
+```{r}
+# create difference raster
+diff.ras.l <- list()
+for (i in 1:length(S)){# or H, is the same
+  diff.ras.l[[i]] <- (S[[i]]-H[[i]])/10000 # divide by scaling factor
+}
+# plot(diff.ras.l[[3]])
+
+# create mean difference raster for each resolution
+diff.ras.l <- lapply(diff.ras.l, FUN=mean)
+# plot(diff.ras.l[[3]])
+```
+
+# create comparison tables
+```{r}
+data.l <- list()
+# i=2
+for(i in 1:length(H)){ #or length(S) -> same
+
+  # rename bands
+  names(H[[i]]) <- bandnames[[i]] #values are gone (min/max)
+  names(S[[i]]) <- bandnames[[i]]
+
+  # convert to dataframes
+  H.df <- as.data.frame(H[[i]])
+  S.df <- as.data.frame(S[[i]])
+  
+  # copy table with wavelengths headers
+  H.df.wave <- H.df
+  colnames(H.df.wave) <- wavelengths[[i]]
+
+  # melt dataframes
+  if(nrow(H.df) == nrow(S.df)){
+    H.dfm <- melt(H.df)
+    S.dfm <- melt(S.df)
+    H.df.wavem <- melt(H.df.wave)
+  }
+  
+  # write into data result list
+  data.l[[i]] <- data.frame('Band'=H.dfm$variable,
+                            'Wavelength'=H.df.wavem$variable,
+                            'Resolution'=res[i],
+                            'Reference.Reflectance'=H.dfm$value/10000, # to convert to surface reflectance
+                            'Sentinel.Reflectance'=S.dfm$value/10000) # to convert to surface reflectance 
+  data.l[[i]] <- na.omit(data.l[[i]])
+  data.l[[i]]$Difference <- data.l[[i]]$Sentinel.Reflectance-data.l[[i]]$Reference.Reflectance
+}
+
+# combine all dataframes from different resolutions
+data <- do.call(rbind,data.l) #rbind(data.l[[1]],data.l[[2]],data.l[[3]])
+
+# add meta data
+data <- cbind(meta.df,data)
+
+# get number of observations
+for (bandname in all.bandnames){
+  data[data$Band %in% bandname,'Observations.Band'] <- summary(data$Band)[[bandname]]
+}
+data$Observations.Scene <- sum(unique(data$Observations.Band))
+
+# get area
+data$Area.km2.Band <- data$Resolution^2*data$Observations.Band/1000000
+data$Area.km2.Scene <- round(mean(unique(data$Area.km2.Band)), digits=5)
+
+# make bands factors
+data$Band <- factor(data$Band,levels = all.bandnames )
+```
+
+# get band means
+```{r}
+# aggregate per band
+data.agg.band <- aggregate(subset(data, select = c('Reference.Reflectance','Sentinel.Reflectance','Difference')),
+                           by = list(data$Band), FUN = mean)
+colnames(data.agg.band)[1] <- 'Band'
+
+# attach reflectance and difference means to data
+for (bandname in data.agg.band$Band){
+  data[data$Band %in% bandname,'Reference.Reflectance.Band'] <- data.agg.band[data.agg.band$Band %in% bandname,
+                                                                              'Reference.Reflectance']
+  data[data$Band %in% bandname,'Sentinel.Reflectance.Band'] <- data.agg.band[data.agg.band$Band %in% bandname,
+                                                                             'Sentinel.Reflectance']
+  data[data$Band %in% bandname,'Difference.Band'] <- data.agg.band[data.agg.band$Band %in% bandname,
+                                                                   'Difference']
+}
+
+# order data by band name
+data <- with(data, data[order(Band),])
+```
+
+# get scene means
+```{r}
+# attach reflectance and difference means to data
+data$Reference.Reflectance.Scene <- mean(data.agg.band$Reference.Reflectance)
+data$Sentinel.Reflectance.Scene <- mean(data.agg.band$Sentinel.Reflectance)
+data$Difference.Scene <- mean(data.agg.band$Difference)
+```
+
+# prepare data for plots
+```{r}
+# titles of comparison rasters and regression plot
+title <- textGrob(paste0(val.id),gp = gpar(fontsize=14, fontface ='bold'))
+diff.ras.title <- textGrob(paste0('Mean SR Difference (Sen-Ref)'),gp = gpar(fontsize=14, fontface ='bold'))
+reg.title <- textGrob(paste0('SR Regression'),gp = gpar(fontsize=14, fontface ='bold'))
+reg.sim <- textGrob(paste0('Reg sim'),gp = gpar(fontsize=14, fontface ='bold'))
+
+# comparison rasters and regression plot
+
+  # prepare common theme
+commontheme <- theme_void()+theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))
+
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){ # Sentinel-2
+  
+  # regression plot parameters
+  reg.shapes <- c(rep(c(15:18,20),2),15,16)
+  
+  # prepare comparison rasters dataframe for plotting
+  diff.ras10 <- as.data.frame(diff.ras.l[[1]], xy=TRUE)
+  diff.ras20 <- as.data.frame(diff.ras.l[[2]], xy=TRUE)
+  diff.ras60 <- as.data.frame(diff.ras.l[[3]], xy=TRUE)
+  
+
+}else{ # Sentinel-3
+  
+  # regression plot parameters
+  reg.shapes <- c(rep(c(15:18,20),3),15)
+  
+  # prepare comparison rasters dataframe for plotting
+  diff.ras300 <- as.data.frame(diff.ras.l[[1]], xy=TRUE)
+
+}
+
+# boxplot for reflectance distribution
+data.box <- subset(data, select = c(Band, Reference.Reflectance, Sentinel.Reflectance))
+colnames(data.box)[colnames(data.box) == 'Reference.Reflectance'] <- ref.sensor
+colnames(data.box)[colnames(data.box) == 'Sentinel.Reflectance'] <- sen.product
+data.box <- melt(data.box, id=c('Band'))
+
+# surface reflectance curves
+data.line <- data.agg.band
+colnames(data.line)[colnames(data.line) == 'Reference.Reflectance'] <- ref.sensor
+colnames(data.line)[colnames(data.line) == 'Sentinel.Reflectance'] <- sen.product
+data.line$Wavelength <- all.wavelengths
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
+  data.line$Label <- c('B1','B2','B3','B4','B5','B6','B7','B8','B8A','B9','B11','B12')
+}else{# Sentinel-3
+  data.line$Label <- c('B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','B12','B16','B17','B18','B21')
+}
+data.line <- melt(data.line, id=c('Band','Wavelength','Label'))
+
+# surface specific ylims
+if(surface == 'Land'){
+  ylim.surface.box <- ylim(-0.05,0.6)
+  ylim.surface.line <- ylim(-0.05,0.4)
+  reg.lim <- c(0,0.8) 
+  diff.ras.lim <- c(-0.3100,0.3100)
+}else{ # Water
+  ylim.surface.box <- ylim(-0.01,0.08)
+  ylim.surface.line <- ylim(-0.01,0.06)
+  reg.lim <- c(0,0.1)
+  diff.ras.lim <- c(-0.03,0.03)
+}
+```
+
+# plotting
+```{r}
+# difference rasters and regression plot
+reg.plot <- ggplot(data = data)+
+  theme_bw() +
+  geom_abline(intercept=0,slope=1, col='black', size=1)+
+  geom_point(aes(x=Reference.Reflectance, y=Sentinel.Reflectance, col=Band, shape=Band),size=3)+
+  theme(legend.position = 'top',legend.title = element_blank())+
+  labs(x = ref.sensor,y = sen.sensor, title = element_blank())+
+  scale_shape_manual(values=reg.shapes)+
+  xlim(reg.lim)+
+  ylim(reg.lim)
+# reg.plot
+
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){ # Sentinel-2
+  
+  # individual maps
+  diff.ras10.plot <- ggplot(diff.ras10)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '10m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+  diff.ras20.plot <- ggplot(diff.ras20)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '20m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+      
+  diff.ras60.plot <- ggplot(diff.ras60)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '60m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+    # arrangement
+    lay <- rbind(c(1,1,1,2),
+                 c(3,4,5,6))
+    diff.ras.plot <- grid.arrange(diff.ras.title, reg.title,
+                                  diff.ras10.plot,diff.ras20.plot,diff.ras60.plot,reg.plot,
+                                  nrow=2,ncol=4,layout_matrix = lay,
+                                  heights=c(0.3,5), widths=c(2,2,2,4.5),
+                                  top = title)
+
+}else{ # Sentinel-3
+  diff.ras300.plot <- ggplot(diff.ras300)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '60m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+  # arrangement
+  # diff.ras300.plot <- diff.ras10.plot #for testing, test with proper S3 data
+  lay <- rbind(c(1,2),
+               c(3,4))
+  diff.ras.plot <- grid.arrange(diff.ras.title, reg.title,
+                                  diff.ras300.plot,reg.plot,
+                                  nrow=2,ncol=2,layout_matrix = lay,
+                                  heights=c(0.3,5), widths=c(5,3.5),
+                                  top = title)
+  
+}
+
+
+# boxplot for reflectance distribution
+box.plot <-   ggplot(data = data.box) +
+  geom_hline(yintercept = 0, size=0.5, color='gray45')+
+  geom_boxplot(aes(x=Band, y=value, color=variable, fill=variable), size=1, alpha=0.3, outlier.shape = NA)+
+  ylim.surface.box+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5))+
+  labs(title = paste0('Surface Reflectance Distribution\n',val.id) , 
+       subtitle=paste0('Site: ',site,
+                       '\nSentinel Scene: ',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'),
+       x = paste0(sen.sensor,' Band'), y = 'Surface Reflectance',
+       color='Product', fill='Product')+
+  scale_color_manual(values = c('darkgreen','red'))+
+  scale_fill_manual(values = c('darkgreen','red'))
+box.plot
+
+# surface reflectance curves
+line.plot <- ggplot(data=data.line,aes(x=Wavelength, y=value, color=variable)) +
+  geom_hline(yintercept = 0, size=0.5, color='gray45')+
+  geom_vline(xintercept = c(all.wavelengths), color='grey',size=0.5, linetype='dashed')+
+  geom_line(size=1)+
+  geom_point(size=3)+
+  geom_text(aes(label=ifelse(variable=='Difference', Label,'')),hjust=0, vjust=-1, size=3)+
+  ylim.surface.line+
+  theme_bw()+
+  theme(plot.title = element_text(size=14, face='bold',hjust = 0.5)#,
+        #legend.title = element_blank()
+        )+
+  labs(title = paste0('Mean Surface Reflectance\n',val.id) , 
+       subtitle=paste0('Site: ',site,
+                       '\nSentinel Scene: ',sen.scene,
+                       ' (',sen.date,', ',sen.time,')\nReference Scene: ',ref.scene,
+                       ' (',ref.date,', ',ref.time,')'),
+       
+       x = 'Wavelength [nm]',y = 'Surface Reflectance')+
+  scale_color_manual(values = c('darkgreen','red','black'),labels = c(ref.sensor, sen.product, 'Difference'),name='Product')
+line.plot
+```
+
+# write to disc
+```{r}
+# avoid issues in Cross Validation script by preventing csv file for insufficient pixels
+if(surface == 'Land'){
+  inexistent <- length(list.files(path = val.id.file, pattern = 'IMAGERY_DOES_NOT_CONTAIN_LAND_PIXELS', recursive = TRUE))
+  insufficient <- length(list.files(path = val.id.file, pattern='IMAGERY_DOES_NOT_CONTAIN_ENOUGH_LAND_PIXELS', recursive = TRUE))
+}else{ # Water
+  inexistent <- length(list.files(path = val.id.file, pattern = 'IMAGERY_DOES_NOT_CONTAIN_WATER_PIXELS', recursive = TRUE))
+  insufficient <- length(list.files(path = val.id.file, pattern='IMAGERY_DOES_NOT_CONTAIN_ENOUGH_WATER_PIXELS', recursive = TRUE))
+}
+
+# write to disc if enough pixels present
+if(inexistent == 0 & insufficient == 0){
+  write.csv(data, file = paste0(val.id.file,'/',val.id.file,'_comparison_data.csv'), row.names = FALSE)
+  
+  if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_box_plot.png'), plot=box.plot, width=10, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_line_plot.png'), plot=line.plot, width=10, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_diff_reg_plot.png'), plot=diff.ras.plot, width=10, height=6, dpi=300)
+  }else{# Sentinel-3
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_box_plot.png'), plot=box.plot, width=13, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_line_plot.png'), plot=line.plot, width=13, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_diff_reg_plot.png'), plot=diff.ras.plot, width=13, height=6, dpi=300)
+  }
+}else{
+  cat('IMAGERY DOES NOT CONTAIN (ENOUGH) WATER PIXELS !\n')
+}
+```
+
+```{r}
+```
