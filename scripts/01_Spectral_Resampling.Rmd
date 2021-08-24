@@ -1,9 +1,13 @@
 ---
 title: 'Spectral Resampling'
-output: html_document
-editor_options: 
-  chunk_output_type: console
+author: "brittth"
+date: "17 February 2021"
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
 # SETTINGS (Adjust them!)
 ```{r}
 # val.id <- 'A'
@@ -16,7 +20,7 @@ editor_options:
 # val.id <- 'H'
 
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 # load packages

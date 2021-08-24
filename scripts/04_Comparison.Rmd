@@ -1,9 +1,12 @@
 ---
 title: 'Comparison'
-output: html_document
-editor_options: 
-  chunk_output_type: console
+author: "brittth"
+date: "23 June 2021"
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 # settings (ADJUST THEM!)
 ```{r}
@@ -22,7 +25,7 @@ editor_options:
 
 # val.id <- 'E'
 # surface <- 'Land'
-
+# 
 # val.id <- 'F'
 # surface <- 'Land'
 
@@ -33,7 +36,7 @@ editor_options:
 # surface <- 'Land'
 
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 # load packages
@@ -42,10 +45,14 @@ setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
 # install.packages('stringr')
 # install.packages('reshape')
 # install.packages('ggplot2')
+# install.packages('gridExtra')
+# install.packages('grid')
 library(raster)
 library(stringr)
 library(reshape)
 library(ggplot2)
+library(gridExtra)
+library(grid)
 ```
 
 # load data
@@ -161,6 +168,31 @@ if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
 }
 ```
 
+# load function
+```{r}
+# function to get legend
+g_legend <- function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == 'guide-box')
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+```
+
+# create comparison raster
+```{r}
+# create difference raster
+diff.ras.l <- list()
+for (i in 1:length(S)){# or H, is the same
+  diff.ras.l[[i]] <- (S[[i]]-H[[i]])/10000 # divide by scaling factor
+}
+# plot(diff.ras.l[[3]])
+
+# create mean difference raster for each resolution
+diff.ras.l <- lapply(diff.ras.l, FUN=mean)
+# plot(diff.ras.l[[3]])
+```
+
 # create comparison tables
 ```{r}
 data.l <- list()
@@ -247,6 +279,38 @@ data$Difference.Scene <- mean(data.agg.band$Difference)
 
 # prepare data for plots
 ```{r}
+# titles of comparison rasters and regression plot
+title <- textGrob(paste0(val.id),gp = gpar(fontsize=14, fontface ='bold'))
+diff.ras.title <- textGrob(paste0('Mean SR Difference (Sen-Ref)'),gp = gpar(fontsize=14, fontface ='bold'))
+reg.title <- textGrob(paste0('SR Regression'),gp = gpar(fontsize=14, fontface ='bold'))
+reg.sim <- textGrob(paste0('Reg sim'),gp = gpar(fontsize=14, fontface ='bold'))
+
+# comparison rasters and regression plot
+
+  # prepare common theme
+commontheme <- theme_void()+theme(plot.title = element_text(size=12, face='bold',hjust = 0.5))
+
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){ # Sentinel-2
+  
+  # regression plot parameters
+  reg.shapes <- c(rep(c(15:18,20),2),15,16)
+  
+  # prepare comparison rasters dataframe for plotting
+  diff.ras10 <- as.data.frame(diff.ras.l[[1]], xy=TRUE)
+  diff.ras20 <- as.data.frame(diff.ras.l[[2]], xy=TRUE)
+  diff.ras60 <- as.data.frame(diff.ras.l[[3]], xy=TRUE)
+  
+
+}else{ # Sentinel-3
+  
+  # regression plot parameters
+  reg.shapes <- c(rep(c(15:18,20),3),15)
+  
+  # prepare comparison rasters dataframe for plotting
+  diff.ras300 <- as.data.frame(diff.ras.l[[1]], xy=TRUE)
+
+}
+
 # boxplot for reflectance distribution
 data.box <- subset(data, select = c(Band, Reference.Reflectance, Sentinel.Reflectance))
 colnames(data.box)[colnames(data.box) == 'Reference.Reflectance'] <- ref.sensor
@@ -269,14 +333,106 @@ data.line <- melt(data.line, id=c('Band','Wavelength','Label'))
 if(surface == 'Land'){
   ylim.surface.box <- ylim(-0.05,0.6)
   ylim.surface.line <- ylim(-0.05,0.4)
+  reg.lim <- c(0,0.8) 
+  diff.ras.lim <- c(-0.3100,0.3100)
 }else{ # Water
   ylim.surface.box <- ylim(-0.01,0.08)
   ylim.surface.line <- ylim(-0.01,0.06)
+  reg.lim <- c(0,0.1)
+  diff.ras.lim <- c(-0.03,0.03)
 }
 ```
 
 # plotting
 ```{r}
+# difference rasters and regression plot
+reg.plot <- ggplot(data = data)+
+  theme_bw() +
+  geom_abline(intercept=0,slope=1, col='black', size=1)+
+  geom_point(aes(x=Reference.Reflectance, y=Sentinel.Reflectance, col=Band, shape=Band),size=3)+
+  theme(legend.position = 'top',legend.title = element_blank())+
+  labs(x = ref.sensor,y = sen.sensor, title = element_blank())+
+  scale_shape_manual(values=reg.shapes)+
+  xlim(reg.lim)+
+  ylim(reg.lim)
+# reg.plot
+
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){ # Sentinel-2
+  
+  # individual maps
+  diff.ras10.plot <- ggplot(diff.ras10)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = FALSE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '10m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+  diff.ras20.plot <- ggplot(diff.ras20)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = FALSE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '20m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+      
+  diff.ras60.plot <- ggplot(diff.ras60)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = FALSE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '60m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+  # get legend
+  diff.ras.legend.dummy <- ggplot(diff.ras10)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '10m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  diff.ras.leg <- g_legend(diff.ras.legend.dummy) # the same for all resolutions
+  
+  # arrangement
+  lay <- rbind(c(1,1,2),
+               c(3,4,7),
+               c(5,6,7))
+  diff.ras.plot <- grid.arrange(diff.ras.title, reg.title,
+                                diff.ras10.plot,diff.ras20.plot,
+                                diff.ras60.plot,diff.ras.leg,reg.plot,
+                                nrow=3,ncol=3,layout_matrix = lay,
+                                heights=c(0.3,5,5), widths=c(2,2,4.5),
+                                top = title)
+  diff.ras.plot
+
+}else{ # Sentinel-3
+  diff.ras300.plot <- ggplot(diff.ras300)+ 
+    geom_raster(aes(x=x, y=y, fill=layer), show.legend = TRUE)+
+    coord_equal()+
+    commontheme +
+    theme(legend.title = element_blank())+
+    labs(title = '60m', legend.title = FALSE)+ 
+    scale_fill_gradient2(low = "blue", mid = "white",high = "red",
+                         limits= diff.ras.lim, na.value = "transparent")
+  
+  # arrangement
+  # diff.ras300.plot <- diff.ras10.plot #for testing, test with proper S3 data
+  lay <- rbind(c(1,2),
+               c(3,4))
+  diff.ras.plot <- grid.arrange(diff.ras.title, reg.title,
+                                  diff.ras300.plot,reg.plot,
+                                  nrow=2,ncol=2,layout_matrix = lay,
+                                  heights=c(0.3,5), widths=c(5,3.5),
+                                  top = title)
+  
+}
+
+
 # boxplot for reflectance distribution
 box.plot <-   ggplot(data = data.box) +
   geom_hline(yintercept = 0, size=0.5, color='gray45')+
@@ -336,9 +492,11 @@ if(inexistent == 0 & insufficient == 0){
   if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
     ggsave(file=paste0(val.id.file,'/',val.id.file,'_box_plot.png'), plot=box.plot, width=10, height=6, dpi=300)
     ggsave(file=paste0(val.id.file,'/',val.id.file,'_line_plot.png'), plot=line.plot, width=10, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_diff_reg_plot.png'), plot=diff.ras.plot, width=10, height=6, dpi=300)
   }else{# Sentinel-3
     ggsave(file=paste0(val.id.file,'/',val.id.file,'_box_plot.png'), plot=box.plot, width=13, height=6, dpi=300)
     ggsave(file=paste0(val.id.file,'/',val.id.file,'_line_plot.png'), plot=line.plot, width=13, height=6, dpi=300)
+    ggsave(file=paste0(val.id.file,'/',val.id.file,'_diff_reg_plot.png'), plot=diff.ras.plot, width=13, height=6, dpi=300)
   }
 }else{
   cat('IMAGERY DOES NOT CONTAIN (ENOUGH) WATER PIXELS !\n')

@@ -1,9 +1,12 @@
 ---
 title: 'APU Statistics'
-output: html_document
-editor_options: 
-  chunk_output_type: console
+author: "brittth"
+date: "24 June 2021"
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 # SETUP
 ## settings (ADJUST THEM!)
 ```{r}
@@ -18,7 +21,7 @@ editor_options:
 # val.id <- 'H Land'
 
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 ## load packages
@@ -206,7 +209,7 @@ for (band.name in all.bandnames){
     apuhisto.xlim <- c(0,0.75)
     apuhisto.ylim <- c(-0.25,0.3)
   }else { # water
-    apuhisto.xlim <- c(0,0.12)
+    apuhisto.xlim <- c(0,0.06)
     apuhisto.ylim <- c(-0.05,0.1)
   }
   apuhisto.labels <- c('SR Specifications','Accuracy Value','Precision Value','Uncertainty Value')
@@ -347,12 +350,12 @@ error.data <- melt(error.data, id.vars = c('Wavelength','Label'))
 # surface dependent parameters
 if(surface =='Land'){
   # APU plot
-  apu.ylim <- c(-0.2,0.25) # max 0.2 before but france incomplete
-  apu.ybreaks <- seq(-0.2,0.25,0.05)# max 0.2 before but france incomplete
+  apu.ylim <- c(-0.15,0.15) # max 0.2 before but france incomplete
+  apu.ybreaks <- seq(-0.2,0.2,0.05)# max 0.2 before but france incomplete
   
   # relative APU plot
-  apu.rel.ylim <- c(-50,400) #300 before but france incomplete, this way, same as water
-  apu.rel.ybreaks <- seq(-50,400,50)#300 before but france incomplete, this way, same as water
+  apu.rel.ylim <- c(-50,100) #300 before but france incomplete, this way, same as water
+  apu.rel.ybreaks <- seq(-50,100,20)#300 before but france incomplete, this way, same as water
   
   # SR difference histogram
     # all histograms  # passed to geom_histogram and stat_function  
@@ -365,12 +368,12 @@ if(surface =='Land'){
   
 }else{ # water
   # APU plot
-  apu.ylim <- c(-0.06,0.06)
-  apu.ybreaks <- seq(-0.06,0.06,0.01)
+  apu.ylim <- c(-0.02,0.02)
+  apu.ybreaks <- seq(-0.03,0.03,0.01)
   
   # relative APU plot
-  apu.rel.ylim <- c(-50,400)
-  apu.rel.ybreaks <- seq(-50,400,50)
+  apu.rel.ylim <- c(-50,250)
+  apu.rel.ybreaks <- seq(-50,250,50)
   
   # SR difference histogram
       # all histograms  # passed to geom_histogram and stat_function  
@@ -379,7 +382,7 @@ if(surface =='Land'){
   binwidth <- 0.005
   
   # regression plot
-  reg.lim <- c(0,0.1)
+  reg.lim <- c(0,0.06)
 }
 ```
 

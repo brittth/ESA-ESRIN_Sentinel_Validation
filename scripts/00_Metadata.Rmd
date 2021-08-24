@@ -1,11 +1,12 @@
 ---
-title: 'Metadata'
-author: 'Britta Themann'
-date: '25 May 2020'
-output: html_document
-editor_options: 
-  chunk_output_type: console
+title: "Metadata"
+author: "brittth"
+date: "25 May 2020"
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 # SETTINGS (Adjust them!)
 ```{r}
@@ -14,7 +15,7 @@ val.colors <- c('#3283FE','#FEAF16','#009E73','#B00068','darkturquoise','#C4451C
 val.shapes <- c(15,17,18,19,15,17,18,19)
 
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 # load packages

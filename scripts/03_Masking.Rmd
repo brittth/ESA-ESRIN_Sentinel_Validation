@@ -1,11 +1,12 @@
 ---
 title: 'Masking'
-author: 'Britta Themann'
+author: 'brittth'
 date: '5 May 2020'
-output: html_document
-editor_options: 
-  chunk_output_type: console
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
 
 # SETTINGS (Adjust them!)
 ```{r}
@@ -27,7 +28,7 @@ editor_options:
 # val.id <- 'H'
 
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 # load packages
@@ -161,6 +162,37 @@ if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
 # unique(values(scl))
 ```
 
+# create mask buffer to exclude outliers - 120m general buffer
+```{r}  
+if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){ # Sentinel-2
+  
+  # prepare mask buffer
+  buffer <- scl$layer
+  buffer[buffer == 4 | buffer == 5 | buffer == 6] <- NA
+  plot(buffer, colNA='red')
+  
+}else{ # Sentinel-3
+  # prepare mask buffer
+  buffer <- scl$tif_subset_bsub_UTM32Nproj.17
+  buffer[buffer == (4096 + 16) | buffer == (4096 + 256 + 16) | buffer == 0] <- NA
+  plot(buffer, colNA='red')
+}
+
+# create mask buffer
+buffer <- buffer(buffer, width=120)
+# plot(buffer, colNA='red')
+
+# convert
+buffer.poly <- rasterToPolygons(buffer, fun=NULL, n=16, na.rm=TRUE, digits=12, dissolve=TRUE)
+# plot(buffer.poly, col=c('grey'))
+
+# reproject flag layer polygon to reference/sentinel imagery projection if necessary
+if(as.character(crs(buffer.poly)) != as.character(crs(im))){
+  buffer.poly <- spTransform(buffer.poly,crs(im))
+  buffer <- projectRaster(buffer, crs= crs(im))
+}
+```
+
 # category information
 ```{r}
 # Sentinel-2 SCL Categories:
@@ -288,6 +320,11 @@ for (i in 1:length(im.list)){
     
     # apply SpatialPolygone version of mask (else problems when resolution differs)
     im.land <- mask(im, scl.land.poly)
+    plot(im.land)
+    
+    # apply SpatialPolygone version of mask buffer
+    im.land <- mask(im.land, buffer.poly,inverse=TRUE)
+    plot(im.land)
     
     # custom cropping
     if(exists('custom.crop')){#so far only for Switzerland Greifensee
@@ -324,6 +361,11 @@ for (i in 1:length(im.list)){
     
     # apply SpatialPolygone version of mask (else problems when resolution differs)
     im.water <- mask(im,scl.water.poly)
+    # plot(im.water)
+    
+    # apply SpatialPolygone version of mask buffer
+    im.water <- mask(im.water, buffer.poly,inverse=TRUE)
+    # plot(im.water)
     
     # check if enough land pixels remain after masking
     if(nrow(na.omit(as.data.frame(im.water))) < 30){
@@ -525,7 +567,7 @@ title.water <- textGrob(paste0(val.id,'  Water'),gp = gpar(fontsize=14, fontface
 if(meta$Sentinel == 'Sentinel-2A' | meta$Sentinel == 'Sentinel-2B'){
   
   lay <- rbind(c(1,2,3,4),
-             c(1,5,6,7))
+               c(1,5,6,7))
   
   # LAND
   if(!exists('insufficient.land.px')){

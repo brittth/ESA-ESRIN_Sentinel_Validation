@@ -1,15 +1,17 @@
 ---
 title: 'Custom_Plots'
-author: 'Britta Themann'
-date: '16 February 2021'
-output: html_document
-editor_options: 
-chunk_output_type: console
+author: 'brittth'
+date: '18 February 2021'
+output: word_document
 ---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
 # settings (ADJUST THEM!)
 ```{r}
 # set working directory
-setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 ```
 
 # Sentinel-3 SR comparison
@@ -90,7 +92,7 @@ ggsave(file='Custom_Plot_IT_S3_line_plot.png', plot=line.plot, width=13, height=
 # library(ggplot2)
 # 
 # # set working directory
-# setwd('C:/Users/britta themann/Documents/Sentinel_Validation/')
+# setwd('C:/Users/brittth/Documents/Sentinel_Validation/')
 # 
 # # load meta data
 # meta <- read.csv('Metadata.csv')
