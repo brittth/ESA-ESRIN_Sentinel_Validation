@@ -22,111 +22,120 @@
 \beamer@subsectionintoc {3}{4}{Masked}{26}{0}{3}
 \beamer@subsectionintoc {3}{5}{SR Distribution}{27}{0}{3}
 \beamer@subsectionintoc {3}{6}{Mean SR}{28}{0}{3}
-\beamer@subsectionintoc {3}{7}{Mean APU}{29}{0}{3}
-\beamer@subsectionintoc {3}{8}{Band APU}{30}{0}{3}
-\beamer@subsectionintoc {3}{9}{Errors}{31}{0}{3}
-\beamer@subsectionintoc {3}{10}{Mean Table}{32}{0}{3}
-\beamer@subsectionintoc {3}{11}{Band Table}{33}{0}{3}
-\beamer@sectionintoc {4}{A Water}{34}{0}{4}
-\beamer@subsectionintoc {4}{1}{Coverage Map}{35}{0}{4}
-\beamer@subsectionintoc {4}{2}{Cropped Maps}{36}{0}{4}
-\beamer@subsectionintoc {4}{3}{Mask}{37}{0}{4}
-\beamer@subsectionintoc {4}{4}{Masked}{38}{0}{4}
-\beamer@subsectionintoc {4}{5}{SR Distribution}{39}{0}{4}
-\beamer@subsectionintoc {4}{6}{Mean SR}{40}{0}{4}
-\beamer@subsectionintoc {4}{7}{Mean APU}{41}{0}{4}
-\beamer@subsectionintoc {4}{8}{Band APU}{42}{0}{4}
-\beamer@subsectionintoc {4}{9}{Errors}{43}{0}{4}
-\beamer@subsectionintoc {4}{10}{Mean Table}{44}{0}{4}
-\beamer@subsectionintoc {4}{11}{Band Table}{45}{0}{4}
-\beamer@sectionintoc {5}{B Land}{46}{0}{5}
-\beamer@subsectionintoc {5}{1}{Coverage Map}{47}{0}{5}
-\beamer@subsectionintoc {5}{2}{Cropped Maps}{48}{0}{5}
-\beamer@subsectionintoc {5}{3}{Mask}{49}{0}{5}
-\beamer@subsectionintoc {5}{4}{Masked}{50}{0}{5}
-\beamer@subsectionintoc {5}{5}{SR Distribution}{51}{0}{5}
-\beamer@subsectionintoc {5}{6}{Mean SR}{52}{0}{5}
-\beamer@subsectionintoc {5}{7}{Mean APU}{53}{0}{5}
-\beamer@subsectionintoc {5}{8}{Band APU}{54}{0}{5}
-\beamer@subsectionintoc {5}{9}{Errors}{55}{0}{5}
-\beamer@subsectionintoc {5}{10}{Mean Table}{56}{0}{5}
-\beamer@subsectionintoc {5}{11}{Band Table}{57}{0}{5}
-\beamer@sectionintoc {6}{C Land}{58}{0}{6}
-\beamer@subsectionintoc {6}{1}{Coverage Map}{59}{0}{6}
-\beamer@subsectionintoc {6}{2}{Cropped Maps}{60}{0}{6}
-\beamer@subsectionintoc {6}{3}{Mask}{61}{0}{6}
-\beamer@subsectionintoc {6}{4}{Masked}{62}{0}{6}
-\beamer@subsectionintoc {6}{5}{SR Distribution}{63}{0}{6}
-\beamer@subsectionintoc {6}{6}{Mean SR}{64}{0}{6}
-\beamer@subsectionintoc {6}{7}{Mean APU}{65}{0}{6}
-\beamer@subsectionintoc {6}{8}{Band APU}{66}{0}{6}
-\beamer@subsectionintoc {6}{9}{Errors}{67}{0}{6}
-\beamer@subsectionintoc {6}{10}{Mean Table}{68}{0}{6}
-\beamer@subsectionintoc {6}{11}{Band Table}{69}{0}{6}
-\beamer@sectionintoc {7}{D Land}{70}{0}{7}
-\beamer@subsectionintoc {7}{1}{Coverage Map}{71}{0}{7}
-\beamer@subsectionintoc {7}{2}{Cropped Maps}{72}{0}{7}
-\beamer@subsectionintoc {7}{3}{Mask}{73}{0}{7}
-\beamer@subsectionintoc {7}{4}{Masked}{74}{0}{7}
-\beamer@subsectionintoc {7}{5}{SR Distribution}{75}{0}{7}
-\beamer@subsectionintoc {7}{6}{Mean SR}{76}{0}{7}
-\beamer@subsectionintoc {7}{7}{Mean APU}{77}{0}{7}
-\beamer@subsectionintoc {7}{8}{Band APU}{78}{0}{7}
-\beamer@subsectionintoc {7}{9}{Errors}{79}{0}{7}
-\beamer@subsectionintoc {7}{10}{Mean Table}{80}{0}{7}
-\beamer@subsectionintoc {7}{11}{Band Table}{81}{0}{7}
-\beamer@sectionintoc {8}{E Land}{82}{0}{8}
-\beamer@subsectionintoc {8}{1}{Coverage Map}{83}{0}{8}
-\beamer@subsectionintoc {8}{2}{Cropped Maps}{84}{0}{8}
-\beamer@subsectionintoc {8}{3}{Mask}{85}{0}{8}
-\beamer@subsectionintoc {8}{4}{Masked}{86}{0}{8}
-\beamer@subsectionintoc {8}{5}{SR Distribution}{87}{0}{8}
-\beamer@subsectionintoc {8}{6}{Mean SR}{88}{0}{8}
-\beamer@subsectionintoc {8}{7}{Mean APU}{89}{0}{8}
-\beamer@subsectionintoc {8}{8}{Band APU}{90}{0}{8}
-\beamer@subsectionintoc {8}{9}{Errors}{91}{0}{8}
-\beamer@subsectionintoc {8}{10}{Mean Table}{92}{0}{8}
-\beamer@subsectionintoc {8}{11}{Band Table}{93}{0}{8}
-\beamer@sectionintoc {9}{F Land}{94}{0}{9}
-\beamer@subsectionintoc {9}{1}{Coverage Map}{95}{0}{9}
-\beamer@subsectionintoc {9}{2}{Cropped Maps}{96}{0}{9}
-\beamer@subsectionintoc {9}{3}{Mask}{97}{0}{9}
-\beamer@subsectionintoc {9}{4}{Masked}{98}{0}{9}
-\beamer@subsectionintoc {9}{5}{SR Distribution}{99}{0}{9}
-\beamer@subsectionintoc {9}{6}{Mean SR}{100}{0}{9}
-\beamer@subsectionintoc {9}{7}{Mean APU}{101}{0}{9}
-\beamer@subsectionintoc {9}{8}{Band APU}{102}{0}{9}
-\beamer@subsectionintoc {9}{9}{Errors}{103}{0}{9}
-\beamer@subsectionintoc {9}{10}{Mean Table}{104}{0}{9}
-\beamer@subsectionintoc {9}{11}{Band Table}{105}{0}{9}
-\beamer@sectionintoc {10}{G Land}{106}{0}{10}
-\beamer@subsectionintoc {10}{1}{Coverage Map}{107}{0}{10}
-\beamer@subsectionintoc {10}{2}{Cropped Maps}{108}{0}{10}
-\beamer@subsectionintoc {10}{3}{Mask}{109}{0}{10}
-\beamer@subsectionintoc {10}{4}{Masked}{110}{0}{10}
-\beamer@subsectionintoc {10}{5}{SR Distribution}{111}{0}{10}
-\beamer@subsectionintoc {10}{6}{Mean SR}{112}{0}{10}
-\beamer@subsectionintoc {10}{7}{Mean APU}{113}{0}{10}
-\beamer@subsectionintoc {10}{8}{Band APU}{114}{0}{10}
-\beamer@subsectionintoc {10}{9}{Errors}{115}{0}{10}
-\beamer@subsectionintoc {10}{10}{Mean Table}{116}{0}{10}
-\beamer@subsectionintoc {10}{11}{Band Table}{117}{0}{10}
-\beamer@sectionintoc {11}{H Land}{118}{0}{11}
-\beamer@subsectionintoc {11}{1}{Coverage Map}{119}{0}{11}
-\beamer@subsectionintoc {11}{2}{Cropped Maps}{120}{0}{11}
-\beamer@subsectionintoc {11}{3}{Mask}{121}{0}{11}
-\beamer@subsectionintoc {11}{4}{Masked}{122}{0}{11}
-\beamer@subsectionintoc {11}{5}{SR Distribution}{123}{0}{11}
-\beamer@subsectionintoc {11}{6}{Mean SR}{124}{0}{11}
-\beamer@subsectionintoc {11}{7}{Mean APU}{125}{0}{11}
-\beamer@subsectionintoc {11}{8}{Band APU}{126}{0}{11}
-\beamer@subsectionintoc {11}{9}{Errors}{127}{0}{11}
-\beamer@subsectionintoc {11}{10}{Mean Table}{128}{0}{11}
-\beamer@subsectionintoc {11}{11}{Band Table}{129}{0}{11}
-\beamer@sectionintoc {12}{Cross Validation}{130}{0}{12}
-\beamer@subsectionintoc {12}{1}{SR Distribution}{131}{0}{12}
-\beamer@subsectionintoc {12}{2}{Mean SR}{136}{0}{12}
-\beamer@subsectionintoc {12}{3}{Mean APU}{141}{0}{12}
-\beamer@subsectionintoc {12}{4}{Mean Relative APU}{146}{0}{12}
-\beamer@subsectionintoc {12}{5}{Mean Errors}{151}{0}{12}
-\beamer@subsectionintoc {12}{6}{Sentinel-3 Algorithm Comparison}{156}{0}{12}
+\beamer@subsectionintoc {3}{7}{Mean SR Diff Reg}{29}{0}{3}
+\beamer@subsectionintoc {3}{8}{Mean APU}{30}{0}{3}
+\beamer@subsectionintoc {3}{9}{Band APU}{31}{0}{3}
+\beamer@subsectionintoc {3}{10}{Errors}{32}{0}{3}
+\beamer@subsectionintoc {3}{11}{Mean Table}{33}{0}{3}
+\beamer@subsectionintoc {3}{12}{Band Table}{34}{0}{3}
+\beamer@sectionintoc {4}{A Water}{35}{0}{4}
+\beamer@subsectionintoc {4}{1}{Coverage Map}{36}{0}{4}
+\beamer@subsectionintoc {4}{2}{Cropped Maps}{37}{0}{4}
+\beamer@subsectionintoc {4}{3}{Mask}{38}{0}{4}
+\beamer@subsectionintoc {4}{4}{Masked}{39}{0}{4}
+\beamer@subsectionintoc {4}{5}{SR Distribution}{40}{0}{4}
+\beamer@subsectionintoc {4}{6}{Mean SR}{41}{0}{4}
+\beamer@subsectionintoc {4}{7}{Mean SR Diff Reg}{42}{0}{4}
+\beamer@subsectionintoc {4}{8}{Mean APU}{43}{0}{4}
+\beamer@subsectionintoc {4}{9}{Band APU}{44}{0}{4}
+\beamer@subsectionintoc {4}{10}{Errors}{45}{0}{4}
+\beamer@subsectionintoc {4}{11}{Mean Table}{46}{0}{4}
+\beamer@subsectionintoc {4}{12}{Band Table}{47}{0}{4}
+\beamer@sectionintoc {5}{B Land}{48}{0}{5}
+\beamer@subsectionintoc {5}{1}{Coverage Map}{49}{0}{5}
+\beamer@subsectionintoc {5}{2}{Cropped Maps}{50}{0}{5}
+\beamer@subsectionintoc {5}{3}{Mask}{51}{0}{5}
+\beamer@subsectionintoc {5}{4}{Masked}{52}{0}{5}
+\beamer@subsectionintoc {5}{5}{SR Distribution}{53}{0}{5}
+\beamer@subsectionintoc {5}{6}{Mean SR}{54}{0}{5}
+\beamer@subsectionintoc {5}{7}{Mean SR Diff Reg}{55}{0}{5}
+\beamer@subsectionintoc {5}{8}{Mean APU}{56}{0}{5}
+\beamer@subsectionintoc {5}{9}{Band APU}{57}{0}{5}
+\beamer@subsectionintoc {5}{10}{Errors}{58}{0}{5}
+\beamer@subsectionintoc {5}{11}{Mean Table}{59}{0}{5}
+\beamer@subsectionintoc {5}{12}{Band Table}{60}{0}{5}
+\beamer@sectionintoc {6}{C Land}{61}{0}{6}
+\beamer@subsectionintoc {6}{1}{Coverage Map}{62}{0}{6}
+\beamer@subsectionintoc {6}{2}{Cropped Maps}{63}{0}{6}
+\beamer@subsectionintoc {6}{3}{Mask}{64}{0}{6}
+\beamer@subsectionintoc {6}{4}{Masked}{65}{0}{6}
+\beamer@subsectionintoc {6}{5}{SR Distribution}{66}{0}{6}
+\beamer@subsectionintoc {6}{6}{Mean SR}{67}{0}{6}
+\beamer@subsectionintoc {6}{7}{Mean SR Diff Reg}{68}{0}{6}
+\beamer@subsectionintoc {6}{8}{Mean APU}{69}{0}{6}
+\beamer@subsectionintoc {6}{9}{Band APU}{70}{0}{6}
+\beamer@subsectionintoc {6}{10}{Errors}{71}{0}{6}
+\beamer@subsectionintoc {6}{11}{Mean Table}{72}{0}{6}
+\beamer@subsectionintoc {6}{12}{Band Table}{73}{0}{6}
+\beamer@sectionintoc {7}{D Land}{74}{0}{7}
+\beamer@subsectionintoc {7}{1}{Coverage Map}{75}{0}{7}
+\beamer@subsectionintoc {7}{2}{Cropped Maps}{76}{0}{7}
+\beamer@subsectionintoc {7}{3}{Mask}{77}{0}{7}
+\beamer@subsectionintoc {7}{4}{Masked}{78}{0}{7}
+\beamer@subsectionintoc {7}{5}{SR Distribution}{79}{0}{7}
+\beamer@subsectionintoc {7}{6}{Mean SR}{80}{0}{7}
+\beamer@subsectionintoc {7}{7}{Mean SR Diff Reg}{81}{0}{7}
+\beamer@subsectionintoc {7}{8}{Mean APU}{82}{0}{7}
+\beamer@subsectionintoc {7}{9}{Band APU}{83}{0}{7}
+\beamer@subsectionintoc {7}{10}{Errors}{84}{0}{7}
+\beamer@subsectionintoc {7}{11}{Mean Table}{85}{0}{7}
+\beamer@subsectionintoc {7}{12}{Band Table}{86}{0}{7}
+\beamer@sectionintoc {8}{E Land}{87}{0}{8}
+\beamer@subsectionintoc {8}{1}{Coverage Map}{88}{0}{8}
+\beamer@subsectionintoc {8}{2}{Cropped Maps}{89}{0}{8}
+\beamer@subsectionintoc {8}{3}{Mask}{90}{0}{8}
+\beamer@subsectionintoc {8}{4}{Masked}{91}{0}{8}
+\beamer@subsectionintoc {8}{5}{SR Distribution}{92}{0}{8}
+\beamer@subsectionintoc {8}{6}{Mean SR}{93}{0}{8}
+\beamer@subsectionintoc {8}{7}{Mean SR Diff Reg}{94}{0}{8}
+\beamer@subsectionintoc {8}{8}{Mean APU}{95}{0}{8}
+\beamer@subsectionintoc {8}{9}{Band APU}{96}{0}{8}
+\beamer@subsectionintoc {8}{10}{Errors}{97}{0}{8}
+\beamer@subsectionintoc {8}{11}{Mean Table}{98}{0}{8}
+\beamer@subsectionintoc {8}{12}{Band Table}{99}{0}{8}
+\beamer@sectionintoc {9}{F Land}{100}{0}{9}
+\beamer@subsectionintoc {9}{1}{Coverage Map}{101}{0}{9}
+\beamer@subsectionintoc {9}{2}{Cropped Maps}{102}{0}{9}
+\beamer@subsectionintoc {9}{3}{Mask}{103}{0}{9}
+\beamer@subsectionintoc {9}{4}{Masked}{104}{0}{9}
+\beamer@subsectionintoc {9}{5}{SR Distribution}{105}{0}{9}
+\beamer@subsectionintoc {9}{6}{Mean SR}{106}{0}{9}
+\beamer@subsectionintoc {9}{7}{Mean SR Diff Reg}{107}{0}{9}
+\beamer@subsectionintoc {9}{8}{Mean APU}{108}{0}{9}
+\beamer@subsectionintoc {9}{9}{Band APU}{109}{0}{9}
+\beamer@subsectionintoc {9}{10}{Errors}{110}{0}{9}
+\beamer@subsectionintoc {9}{11}{Mean Table}{111}{0}{9}
+\beamer@subsectionintoc {9}{12}{Band Table}{112}{0}{9}
+\beamer@sectionintoc {10}{G Land}{113}{0}{10}
+\beamer@subsectionintoc {10}{1}{Coverage Map}{114}{0}{10}
+\beamer@subsectionintoc {10}{2}{Cropped Maps}{115}{0}{10}
+\beamer@subsectionintoc {10}{3}{Mask}{116}{0}{10}
+\beamer@subsectionintoc {10}{4}{Masked}{117}{0}{10}
+\beamer@subsectionintoc {10}{5}{SR Distribution}{118}{0}{10}
+\beamer@subsectionintoc {10}{6}{Mean SR}{119}{0}{10}
+\beamer@subsectionintoc {10}{7}{Mean SR Diff Reg}{120}{0}{10}
+\beamer@subsectionintoc {10}{8}{Mean APU}{121}{0}{10}
+\beamer@subsectionintoc {10}{9}{Band APU}{122}{0}{10}
+\beamer@subsectionintoc {10}{10}{Errors}{123}{0}{10}
+\beamer@subsectionintoc {10}{11}{Mean Table}{124}{0}{10}
+\beamer@subsectionintoc {10}{12}{Band Table}{125}{0}{10}
+\beamer@sectionintoc {11}{H Land}{126}{0}{11}
+\beamer@subsectionintoc {11}{1}{Coverage Map}{127}{0}{11}
+\beamer@subsectionintoc {11}{2}{Cropped Maps}{128}{0}{11}
+\beamer@subsectionintoc {11}{3}{Mask}{129}{0}{11}
+\beamer@subsectionintoc {11}{4}{Masked}{130}{0}{11}
+\beamer@subsectionintoc {11}{5}{SR Distribution}{131}{0}{11}
+\beamer@subsectionintoc {11}{6}{Mean SR}{132}{0}{11}
+\beamer@subsectionintoc {11}{7}{Mean SR Diff Reg}{133}{0}{11}
+\beamer@subsectionintoc {11}{8}{Mean APU}{134}{0}{11}
+\beamer@subsectionintoc {11}{9}{Band APU}{135}{0}{11}
+\beamer@subsectionintoc {11}{10}{Errors}{136}{0}{11}
+\beamer@subsectionintoc {11}{11}{Mean Table}{137}{0}{11}
+\beamer@subsectionintoc {11}{12}{Band Table}{138}{0}{11}
+\beamer@sectionintoc {12}{Cross Validation}{139}{0}{12}
+\beamer@subsectionintoc {12}{1}{SR Distribution}{140}{0}{12}
+\beamer@subsectionintoc {12}{2}{Mean SR}{145}{0}{12}
+\beamer@subsectionintoc {12}{3}{Mean APU}{150}{0}{12}
+\beamer@subsectionintoc {12}{4}{Mean Relative APU}{155}{0}{12}
+\beamer@subsectionintoc {12}{5}{Mean Errors}{160}{0}{12}
+\beamer@subsectionintoc {12}{6}{Sentinel-3 Algorithm Comparison}{165}{0}{12}

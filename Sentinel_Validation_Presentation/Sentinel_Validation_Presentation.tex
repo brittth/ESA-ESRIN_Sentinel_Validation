@@ -1,7 +1,7 @@
 \documentclass[9pt]{beamer}
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
-\graphicspath{{C:/Users/britta themann/Documents/Sentinel_Validation/}}
+\graphicspath{{C:/Users/brittth/Documents/Sentinel_Validation/}}
 \usetheme{Boadilla}
 \usepackage{booktabs} % tables
 \usefonttheme[onlymath]{serif}
@@ -64,7 +64,7 @@
 
 \title{Validation of Sentinel Surface Reflectance Products}
 \subtitle{Using 2018 FLEX Campaign Imagery as Reference}
-\author{Britta Themann}
+\author{brittth}
 \institute{ESA-ESRIN}
 \date{\today}
 
@@ -136,9 +136,9 @@ Create an input csv file listing dataset specific meta data:
 \frametitle{Methods: Overview I/II}
 \begin{center}
 \includegraphics[width = 10cm, height = 8cm,keepaspectratio]
-{C:/Users/britta themann/Documents/Sentinel_Validation_Flowcharts/Methods.png}
+{C:/Users/brittth/Documents/Sentinel_Validation_Flowcharts/Methods.png}
 \newline\newline
-All methods were conducted using \textbf{R v.4.0.3} and \textbf{RStudio v. 1.3.1093} and saved as \textbf{R-Markdowns (Rmd)} available on \href{https://github.com/brittth/ESA-ESRIN_Sentinel_Validation}{\textbf{this GitHub repository}}.\newline
+All methods were conducted using \textbf{R v.4.0.3} and \textbf{RStudio v. 1.3.1093} and saved as \textbf{R-Markdowns (Rmd)}.\newline
 \end{center}
 \end{frame}
 
@@ -146,7 +146,7 @@ All methods were conducted using \textbf{R v.4.0.3} and \textbf{RStudio v. 1.3.1
 \frametitle{Methods: Overview II/II}
 \begin{center}
 \includegraphics[width = 10cm, height = 8cm,keepaspectratio]
-{C:/Users/britta themann/Documents/Sentinel_Validation_Flowcharts/File_and_Folder_Structure.png}
+{C:/Users/brittth/Documents/Sentinel_Validation_Flowcharts/File_and_Folder_Structure.png}
 \end{center}
 \end{frame}
 
@@ -207,20 +207,23 @@ SYNERGY Flag Layer
 \item LAND: success + partly cloudy + land \& success + land
 \end{itemize}
 \end{alertblock}
+A 120m buffer is applied to ensure exclusion of falsely classified SCL categories around the fringes of the masked area. Due to their low spatial resolution, this has no effect on the Sentinel-3 imagery.
 \end{frame}
 
 \subsection{Comparison}
 \begin{frame}
 \frametitle{Methods: Comparison of Surface Reflectance}
-Sentinel vs. reference imagery\newline\newline
+Sentinel vs. reference imagery      (Surface Reflectance = SR)\newline\newline
 Surface Reflectance Distribution $\Rightarrow$ Boxplot:
 \begin{itemize}
-\item Hinges = 25\% and 75\% quantiles
-\item Center Bar = median
-\item Whiskers = distance to extrema excluding outliers
-\item Outliers = values farther than 1.5 times the inter-quartile range away from respective hinge\newline 
+\item\scriptsize Hinges = 25\% and 75\% quantiles
+\item\scriptsize Center Bar = median
+\item\scriptsize Whiskers = distance to extrema excluding outliers
+\item\scriptsize Outliers = values farther than 1.5 times the inter-quartile range away from respective hinge\newline 
 \end{itemize}
-Mean Surface Reflectance and Surface Reflectance Difference $\Rightarrow$ Lineplot
+Mean Surface Reflectance and Surface Reflectance Difference $\Rightarrow$ Lineplot\newline\newline
+Mean Surface Reflectance Difference per Spatial Resolution and\newline
+Surface Reflectance Regression $\Rightarrow$ Raster \& Scatter Plot
 \end{frame}
 
 \subsection{APU Statistics}
@@ -423,6 +426,18 @@ A Land\hspace{2.2cm}
 \end{center}
 \end{frame}
 
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{A Land Mean SR Diff Reg}
+\frametitle{\hspace{4.75cm}
+A Land\hspace{2.2cm}
+\hyperlink{A Water Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}A Water}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Land/A_Land_diff_reg_plot.png}
+\end{center}
+\end{frame}
+
 \subsection{Mean APU}
 \begin{frame}
 \label{A Land Mean APU}
@@ -561,6 +576,19 @@ A Water\hspace{2.2cm}
 \begin{center}
 \includegraphics[width = 11cm, height = 8cm,keepaspectratio]
 {A_Water/A_Water_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{A Water Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+A Land\hspace{0.2cm}\hyperlink{A Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+A Water\hspace{2.2cm}
+\hyperlink{B Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}B Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{A_Water/A_Water_diff_reg_plot.png}
 \end{center}
 \end{frame}
 
@@ -710,6 +738,19 @@ B Land\hspace{2.2cm}
 \end{center}
 \end{frame}
 
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{B Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+A Water\hspace{0.2cm}\hyperlink{A Water Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+B Land\hspace{2.2cm}
+\hyperlink{C Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}C Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{B_Land/B_Land_diff_reg_plot.png}
+\end{center}
+\end{frame}
+
 \subsection{Mean APU}
 \begin{frame}
 \label{B Land Mean APU}
@@ -853,6 +894,19 @@ C Land\hspace{2.2cm}
 \begin{center}
 \includegraphics[width = 11cm, height = 8cm,keepaspectratio]
 {C_Land/C_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{C Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+B Land\hspace{0.2cm}\hyperlink{B Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+C Land\hspace{2.2cm}
+\hyperlink{D Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}D Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{C_Land/C_Land_diff_reg_plot.png}
 \end{center}
 \end{frame}
 
@@ -1002,6 +1056,19 @@ D Land\hspace{2.2cm}
 \end{center}
 \end{frame}
 
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{D Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+C Land\hspace{0.2cm}\hyperlink{C Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+D Land\hspace{2.2cm}
+\hyperlink{E Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}E Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{D_Land/D_Land_diff_reg_plot.png}
+\end{center}
+\end{frame}
+
 \subsection{Mean APU}
 \begin{frame}
 \label{D Land Mean APU}
@@ -1145,6 +1212,19 @@ E Land\hspace{2.2cm}
 \begin{center}
 \includegraphics[width = 11cm, height = 8cm,keepaspectratio]
 {E_Land/E_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{E Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+D Land\hspace{0.2cm}\hyperlink{D Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+E Land\hspace{2.2cm}
+\hyperlink{F Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}F Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{E_Land/E_Land_diff_reg_plot.png}
 \end{center}
 \end{frame}
 
@@ -1294,6 +1374,19 @@ F Land\hspace{2.2cm}
 \end{center}
 \end{frame}
 
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{F Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+E Land\hspace{0.2cm}\hyperlink{E Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+F Land\hspace{2.2cm}
+\hyperlink{G Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}G Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{F_Land/F_Land_diff_reg_plot.png}
+\end{center}
+\end{frame}
+
 \subsection{Mean APU}
 \begin{frame}
 \label{F Land Mean APU}
@@ -1440,6 +1533,19 @@ G Land\hspace{2.2cm}
 \end{center}
 \end{frame}
 
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{G Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+F Land\hspace{0.2cm}\hyperlink{F Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+G Land\hspace{2.2cm}
+\hyperlink{H Land Mean SR Diff Reg}{\beamerskipbutton}\hspace{0.2cm}H Land}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{G_Land/G_Land_diff_reg_plot.png}
+\end{center}
+\end{frame}
+
 \subsection{Mean APU}
 \begin{frame}
 \label{G Land Mean APU}
@@ -1577,6 +1683,18 @@ H Land\hspace{4.75cm}}
 \begin{center}
 \includegraphics[width = 11cm, height = 8cm,keepaspectratio]
 {H_Land/H_Land_line_plot.png}
+\end{center}
+\end{frame}
+
+\subsection{Mean SR Diff Reg}
+\begin{frame}
+\label{H Land Mean SR Diff Reg}
+\frametitle{\hspace{0.5cm}
+G Land\hspace{0.2cm}\hyperlink{G Land Mean SR Diff Reg}{\beamerreturnbutton}\hspace{2.2cm}
+H Land\hspace{4.75cm}}
+\begin{center}
+\includegraphics[width = 11cm, height = 8cm,keepaspectratio]
+{H_Land/H_Land_diff_reg_plot.png}
 \end{center}
 \end{frame}
 

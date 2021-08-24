@@ -4,121 +4,130 @@
 \beamer@slide {A Land Masked}{26}
 \beamer@slide {A Land SR Distribution}{27}
 \beamer@slide {A Land Mean SR}{28}
-\beamer@slide {A Land Mean APU}{29}
-\beamer@slide {A Land Band APU}{30}
-\beamer@slide {A Land Errors}{31}
-\beamer@slide {A Land Mean Table}{32}
-\beamer@slide {A Land Band Table}{33}
-\beamer@slide {A Water Coverage Map}{35}
-\beamer@slide {A Water Cropped Maps}{36}
-\beamer@slide {A Water Mask}{37}
-\beamer@slide {A Water Masked}{38}
-\beamer@slide {A Water SR Distribution}{39}
-\beamer@slide {A Water Mean SR}{40}
-\beamer@slide {A Water Mean APU}{41}
-\beamer@slide {A Water Band APU}{42}
-\beamer@slide {A Water Errors}{43}
-\beamer@slide {A Water Mean Table}{44}
-\beamer@slide {A Water Band Table}{45}
-\beamer@slide {B Land Coverage Map}{47}
-\beamer@slide {B Land Cropped Maps}{48}
-\beamer@slide {B Land Mask}{49}
-\beamer@slide {B Land Masked}{50}
-\beamer@slide {B Land SR Distribution}{51}
-\beamer@slide {B Land Mean SR}{52}
-\beamer@slide {B Land Mean APU}{53}
-\beamer@slide {B Land Band APU}{54}
-\beamer@slide {B Land Errors}{55}
-\beamer@slide {B Land Mean Table}{56}
-\beamer@slide {B Land Band Table}{57}
-\beamer@slide {C Land Coverage Map}{59}
-\beamer@slide {C Land Cropped Maps}{60}
-\beamer@slide {C Land Mask}{61}
-\beamer@slide {C Land Masked}{62}
-\beamer@slide {C Land SR Distribution}{63}
-\beamer@slide {C Land Mean SR}{64}
-\beamer@slide {C Land Mean APU}{65}
-\beamer@slide {C Land Band APU}{66}
-\beamer@slide {C Land Errors}{67}
-\beamer@slide {C Land Mean Table}{68}
-\beamer@slide {C Land Band Table}{69}
-\beamer@slide {D Land Coverage Map}{71}
-\beamer@slide {D Land Cropped Maps}{72}
-\beamer@slide {D Land Mask}{73}
-\beamer@slide {D Land Masked}{74}
-\beamer@slide {D Land SR Distribution}{75}
-\beamer@slide {D Land Mean SR}{76}
-\beamer@slide {D Land Mean APU}{77}
-\beamer@slide {D Land Band APU}{78}
-\beamer@slide {D Land Errors}{79}
-\beamer@slide {D Land Mean Table}{80}
-\beamer@slide {D Land Band Table}{81}
-\beamer@slide {E Land Coverage Map}{83}
-\beamer@slide {E Land Cropped Maps}{84}
-\beamer@slide {E Land Mask}{85}
-\beamer@slide {E Land Masked}{86}
-\beamer@slide {E Land SR Distribution}{87}
-\beamer@slide {E Land Mean SR}{88}
-\beamer@slide {E Land Mean APU}{89}
-\beamer@slide {E Land Band APU}{90}
-\beamer@slide {E Land Errors}{91}
-\beamer@slide {E Land Mean Table}{92}
-\beamer@slide {E Land Band Table}{93}
-\beamer@slide {F Land Coverage Map}{95}
-\beamer@slide {F Land Cropped Maps}{96}
-\beamer@slide {F Land Mask}{97}
-\beamer@slide {F Land Masked}{98}
-\beamer@slide {F Land SR Distribution}{99}
-\beamer@slide {F Land Mean SR}{100}
-\beamer@slide {F Land Mean APU}{101}
-\beamer@slide {F Land Band APU}{102}
-\beamer@slide {F Land Errors}{103}
-\beamer@slide {F Land Mean Table}{104}
-\beamer@slide {F Land Band Table}{105}
-\beamer@slide {G Land Coverage Map}{107}
-\beamer@slide {G Land Cropped Maps}{108}
-\beamer@slide {G Land Mask}{109}
-\beamer@slide {G Land Masked}{110}
-\beamer@slide {G Land SR Distribution}{111}
-\beamer@slide {G Land Mean SR}{112}
-\beamer@slide {G Land Mean APU}{113}
-\beamer@slide {G Land Band APU}{114}
-\beamer@slide {G Land Errors}{115}
-\beamer@slide {G Land Mean Table}{116}
-\beamer@slide {G Land Band Table}{117}
-\beamer@slide {H Land Coverage Map}{119}
-\beamer@slide {H Land Cropped Maps}{120}
-\beamer@slide {H Land Mask}{121}
-\beamer@slide {H Land Masked}{122}
-\beamer@slide {H Land SR Distribution}{123}
-\beamer@slide {H Land Mean SR}{124}
-\beamer@slide {H Land Mean APU}{125}
-\beamer@slide {H Land Band APU}{126}
-\beamer@slide {H Land Errors}{127}
-\beamer@slide {H Land Mean Table}{128}
-\beamer@slide {H Land Band Table}{129}
-\beamer@slide {SR Distribution Scenes Land}{131}
-\beamer@slide {SR Distribution Scenes Water}{132}
-\beamer@slide {SR Distribution S2Bands Land}{133}
-\beamer@slide {SR Distribution S2Bands Water}{134}
-\beamer@slide {SR Distribution S3Bands Land}{135}
-\beamer@slide {Mean SR Scenes Land}{136}
-\beamer@slide {Mean SR Scenes Water}{137}
-\beamer@slide {Mean SR S2Bands Land}{138}
-\beamer@slide {Mean SR S2Bands Water}{139}
-\beamer@slide {Mean SR S3Bands Land}{140}
-\beamer@slide {Mean APU Scenes Land}{141}
-\beamer@slide {Mean APU Scenes Water}{142}
-\beamer@slide {Mean APU S2Bands Land}{143}
-\beamer@slide {Mean APU S2Bands Water}{144}
-\beamer@slide {Mean APU S3Bands Land}{145}
-\beamer@slide {Mean Relative APU Scenes Land}{146}
-\beamer@slide {Mean Relative APU Scenes Water}{147}
-\beamer@slide {Mean Relative APU S2Bands Land}{148}
-\beamer@slide {Mean Relative APU S2Bands Water}{149}
-\beamer@slide {Mean Relative APU S3Bands Land}{150}
-\beamer@slide {Mean Errors Scenes Land}{151}
-\beamer@slide {Mean Errors Scenes Water}{152}
-\beamer@slide {Mean Errors S2Bands Land}{153}
-\beamer@slide {Mean Errors S2Bands Water}{154}
-\beamer@slide {Mean Errors S3Bands Land}{155}
+\beamer@slide {A Land Mean SR Diff Reg}{29}
+\beamer@slide {A Land Mean APU}{30}
+\beamer@slide {A Land Band APU}{31}
+\beamer@slide {A Land Errors}{32}
+\beamer@slide {A Land Mean Table}{33}
+\beamer@slide {A Land Band Table}{34}
+\beamer@slide {A Water Coverage Map}{36}
+\beamer@slide {A Water Cropped Maps}{37}
+\beamer@slide {A Water Mask}{38}
+\beamer@slide {A Water Masked}{39}
+\beamer@slide {A Water SR Distribution}{40}
+\beamer@slide {A Water Mean SR}{41}
+\beamer@slide {A Water Mean SR Diff Reg}{42}
+\beamer@slide {A Water Mean APU}{43}
+\beamer@slide {A Water Band APU}{44}
+\beamer@slide {A Water Errors}{45}
+\beamer@slide {A Water Mean Table}{46}
+\beamer@slide {A Water Band Table}{47}
+\beamer@slide {B Land Coverage Map}{49}
+\beamer@slide {B Land Cropped Maps}{50}
+\beamer@slide {B Land Mask}{51}
+\beamer@slide {B Land Masked}{52}
+\beamer@slide {B Land SR Distribution}{53}
+\beamer@slide {B Land Mean SR}{54}
+\beamer@slide {B Land Mean SR Diff Reg}{55}
+\beamer@slide {B Land Mean APU}{56}
+\beamer@slide {B Land Band APU}{57}
+\beamer@slide {B Land Errors}{58}
+\beamer@slide {B Land Mean Table}{59}
+\beamer@slide {B Land Band Table}{60}
+\beamer@slide {C Land Coverage Map}{62}
+\beamer@slide {C Land Cropped Maps}{63}
+\beamer@slide {C Land Mask}{64}
+\beamer@slide {C Land Masked}{65}
+\beamer@slide {C Land SR Distribution}{66}
+\beamer@slide {C Land Mean SR}{67}
+\beamer@slide {C Land Mean SR Diff Reg}{68}
+\beamer@slide {C Land Mean APU}{69}
+\beamer@slide {C Land Band APU}{70}
+\beamer@slide {C Land Errors}{71}
+\beamer@slide {C Land Mean Table}{72}
+\beamer@slide {C Land Band Table}{73}
+\beamer@slide {D Land Coverage Map}{75}
+\beamer@slide {D Land Cropped Maps}{76}
+\beamer@slide {D Land Mask}{77}
+\beamer@slide {D Land Masked}{78}
+\beamer@slide {D Land SR Distribution}{79}
+\beamer@slide {D Land Mean SR}{80}
+\beamer@slide {D Land Mean SR Diff Reg}{81}
+\beamer@slide {D Land Mean APU}{82}
+\beamer@slide {D Land Band APU}{83}
+\beamer@slide {D Land Errors}{84}
+\beamer@slide {D Land Mean Table}{85}
+\beamer@slide {D Land Band Table}{86}
+\beamer@slide {E Land Coverage Map}{88}
+\beamer@slide {E Land Cropped Maps}{89}
+\beamer@slide {E Land Mask}{90}
+\beamer@slide {E Land Masked}{91}
+\beamer@slide {E Land SR Distribution}{92}
+\beamer@slide {E Land Mean SR}{93}
+\beamer@slide {E Land Mean SR Diff Reg}{94}
+\beamer@slide {E Land Mean APU}{95}
+\beamer@slide {E Land Band APU}{96}
+\beamer@slide {E Land Errors}{97}
+\beamer@slide {E Land Mean Table}{98}
+\beamer@slide {E Land Band Table}{99}
+\beamer@slide {F Land Coverage Map}{101}
+\beamer@slide {F Land Cropped Maps}{102}
+\beamer@slide {F Land Mask}{103}
+\beamer@slide {F Land Masked}{104}
+\beamer@slide {F Land SR Distribution}{105}
+\beamer@slide {F Land Mean SR}{106}
+\beamer@slide {F Land Mean SR Diff Reg}{107}
+\beamer@slide {F Land Mean APU}{108}
+\beamer@slide {F Land Band APU}{109}
+\beamer@slide {F Land Errors}{110}
+\beamer@slide {F Land Mean Table}{111}
+\beamer@slide {F Land Band Table}{112}
+\beamer@slide {G Land Coverage Map}{114}
+\beamer@slide {G Land Cropped Maps}{115}
+\beamer@slide {G Land Mask}{116}
+\beamer@slide {G Land Masked}{117}
+\beamer@slide {G Land SR Distribution}{118}
+\beamer@slide {G Land Mean SR}{119}
+\beamer@slide {G Land Mean SR Diff Reg}{120}
+\beamer@slide {G Land Mean APU}{121}
+\beamer@slide {G Land Band APU}{122}
+\beamer@slide {G Land Errors}{123}
+\beamer@slide {G Land Mean Table}{124}
+\beamer@slide {G Land Band Table}{125}
+\beamer@slide {H Land Coverage Map}{127}
+\beamer@slide {H Land Cropped Maps}{128}
+\beamer@slide {H Land Mask}{129}
+\beamer@slide {H Land Masked}{130}
+\beamer@slide {H Land SR Distribution}{131}
+\beamer@slide {H Land Mean SR}{132}
+\beamer@slide {H Land Mean SR Diff Reg}{133}
+\beamer@slide {H Land Mean APU}{134}
+\beamer@slide {H Land Band APU}{135}
+\beamer@slide {H Land Errors}{136}
+\beamer@slide {H Land Mean Table}{137}
+\beamer@slide {H Land Band Table}{138}
+\beamer@slide {SR Distribution Scenes Land}{140}
+\beamer@slide {SR Distribution Scenes Water}{141}
+\beamer@slide {SR Distribution S2Bands Land}{142}
+\beamer@slide {SR Distribution S2Bands Water}{143}
+\beamer@slide {SR Distribution S3Bands Land}{144}
+\beamer@slide {Mean SR Scenes Land}{145}
+\beamer@slide {Mean SR Scenes Water}{146}
+\beamer@slide {Mean SR S2Bands Land}{147}
+\beamer@slide {Mean SR S2Bands Water}{148}
+\beamer@slide {Mean SR S3Bands Land}{149}
+\beamer@slide {Mean APU Scenes Land}{150}
+\beamer@slide {Mean APU Scenes Water}{151}
+\beamer@slide {Mean APU S2Bands Land}{152}
+\beamer@slide {Mean APU S2Bands Water}{153}
+\beamer@slide {Mean APU S3Bands Land}{154}
+\beamer@slide {Mean Relative APU Scenes Land}{155}
+\beamer@slide {Mean Relative APU Scenes Water}{156}
+\beamer@slide {Mean Relative APU S2Bands Land}{157}
+\beamer@slide {Mean Relative APU S2Bands Water}{158}
+\beamer@slide {Mean Relative APU S3Bands Land}{159}
+\beamer@slide {Mean Errors Scenes Land}{160}
+\beamer@slide {Mean Errors Scenes Water}{161}
+\beamer@slide {Mean Errors S2Bands Land}{162}
+\beamer@slide {Mean Errors S2Bands Water}{163}
+\beamer@slide {Mean Errors S3Bands Land}{164}
